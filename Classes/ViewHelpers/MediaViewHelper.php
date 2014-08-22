@@ -38,15 +38,11 @@ class MediaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\ImageViewHelper {
 	 *
 	 * @param FileInterface|AbstractFileFolder $file
 	 * @param array $additionalConfig
-	 * @param string $width
-	 * @param string $height
-	 * @param integer $minWidth
-	 * @param integer $minHeight
-	 * @param integer $maxWidth
-	 * @param integer $maxHeight
+	 * @param string $width This can be a numeric value representing the fixed width of in pixels. But you can also perform simple calculations by adding "m" or "c" to the value. See imgResource.width for possible options.
+	 * @param string $height This can be a numeric value representing the fixed height in pixels. But you can also perform simple calculations by adding "m" or "c" to the value. See imgResource.width for possible options.
 	 * @return string Rendered tag
 	 */
-	public function render($file, $additionalConfig = array(), $width = NULL, $height = NULL, $minWidth = NULL, $minHeight = NULL, $maxWidth = NULL, $maxHeight = NULL) {
+	public function render($file, $additionalConfig = array(), $width = NULL, $height = NULL) {
 
 		// get Resource Object (non ExtBase version)
 		$file = $this->imageService->getImage(NULL, $file, FALSE);
@@ -62,9 +58,9 @@ class MediaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\ImageViewHelper {
 			||
 			($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($OriginalFile)) === FALSE
 		) {
-			return parent::render(NULL, $width, $height, $minWidth, $minHeight, $maxWidth, $maxHeight, FALSE, $file);
+			return parent::render(NULL, $width, $height, NULL, NULL, NULL, NULL, FALSE, $file);
 		}
 
-		return $helper->renderTag($this->tag, $file, $additionalConfig, $width, $height, $minWidth, $minHeight, $maxWidth, $maxHeight);
+		return $helper->renderTag($this->tag, $file, $additionalConfig, $width, $height);
 	}
 }

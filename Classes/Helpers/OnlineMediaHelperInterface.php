@@ -63,15 +63,11 @@ interface OnlineMediaHelperInterface extends \TYPO3\CMS\Core\SingletonInterface 
 	 * @param TagBuilder $tag
 	 * @param FileInterface $file
 	 * @param array $additionalConfig
-	 * @param null $width
-	 * @param null $height
-	 * @param null $minWidth
-	 * @param null $minHeight
-	 * @param null $maxWidth
-	 * @param null $maxHeight
+	 * @param integer|string $width TYPO3 known format; examples: 220, 200m or 200c
+	 * @param integer|string $height TYPO3 known format; examples: 220, 200m or 200c
 	 * @return string
 	 */
-	public function renderTag(TagBuilder $tag, FileInterface $file, $additionalConfig = array(), $width = NULL, $height = NULL, $minWidth = NULL, $minHeight = NULL, $maxWidth = NULL, $maxHeight = NULL);
+	public function renderTag(TagBuilder $tag, FileInterface $file, $additionalConfig = array(), $width = '', $height = '');
 
 	/**
 	 * Get local absolute file path to preview image

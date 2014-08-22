@@ -98,19 +98,24 @@ class YouTubeHelper implements OnlineMediaHelperInterface {
 	 * @param TagBuilder $tag
 	 * @param FileInterface $file
 	 * @param array $additionalConfig
-	 * @param null $width
-	 * @param null $height
-	 * @param null $minWidth
-	 * @param null $minHeight
-	 * @param null $maxWidth
-	 * @param null $maxHeight
+	 * @param integer|string $width TYPO3 known format; examples: 220, 200m or 200c
+	 * @param integer|string $height TYPO3 known format; examples: 220, 200m or 200c
 	 * @return string|bool
 	 */
-	public function renderTag(TagBuilder $tag, FileInterface $file, $additionalConfig = array(), $width = NULL, $height = NULL, $minWidth = NULL, $minHeight = NULL, $maxWidth = NULL, $maxHeight = NULL) {
+	public function renderTag(TagBuilder $tag, FileInterface $file, $additionalConfig = array(), $width = '', $height = '') {
 		$videoId = $this->getVideoId($file);
 
 		$tag->setTagName('iframe');
 		$tag->forceClosingTag(TRUE);
+
+		$width = (int)$width;
+		if (!empty($width)) {
+			$tag->addAttribute('width', $width);
+		}
+		$height = (int)$height;
+		if (!empty($height)) {
+			$tag->addAttribute('height', $height);
+		}
 
 		$tag->addAttribute('src', sprintf('//www.youtube.com/embed/%s?controls=2&showinfo=0', $videoId));
 		$tag->addAttribute('allowfullscreen', '');

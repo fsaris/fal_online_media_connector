@@ -53,7 +53,14 @@ class ImageViewHelper extends \MiniFranske\FalOnlineMediaConnector\ViewHelpers\M
 			throw new \TYPO3\CMS\Fluid\Core\ViewHelper\Exception('You must either specify a string src or a File object.', 1382284106);
 		}
 
+		if ($width === NULL && $maxWidth !== NULL) {
+			$width = $maxWidth . 'm';
+		}
+		if ($height === NULL && $maxHeight !== NULL) {
+			$height = $maxHeight . 'm';
+		}
 		$image = $this->imageService->getImage($src, $image, $treatIdAsReference);
-		return parent::render($image, $width, $height, $minWidth, $minHeight, $maxWidth, $maxHeight);
+
+		return parent::render($image, array(), $width, $height);
 	}
 }
