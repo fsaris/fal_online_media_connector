@@ -39,6 +39,18 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_iconworks.php']['ov
 	'generatePublicUrl'
 );
 
+
+if (TYPO3_MODE === 'BE') {
+	// Register JS
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['RequireJS']['postInitializationModules']['TYPO3/CMS/Backend/DragUploader'][]
+		= '/typo3conf/ext/fal_online_media_connector/Resources/Public/Js/DragUploader';
+	// Ajax controller
+	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler (
+		'FalOnlineMediaConnector::onlineMedia',
+		'MiniFranske\\FalOnlineMediaConnector\\Ajax\\OnlineMediaController->add'
+	);
+}
+
 \MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry::getInstance()->registerOnlineMediaFileExtension(
 	'ytb',
 	'MiniFranske\\FalOnlineMediaConnector\\Helpers\\YouTubeHelper',

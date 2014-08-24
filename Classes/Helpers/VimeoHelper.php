@@ -27,6 +27,7 @@ namespace MiniFranske\FalOnlineMediaConnector\Helpers;
 
 use TYPO3\CMS\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -36,33 +37,12 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 /**
  * Class VimeoHelper
  */
-class VimeoHelper implements OnlineMediaHelperInterface {
+class VimeoHelper extends AbstractOnlineMediaHelper {
 
 	/**
 	 * @var array
 	 */
 	protected $infoCache = array();
-
-	/**
-	 * Cached videoIds [fileUid => videoId]
-	 *
-	 * @var array
-	 */
-	protected $videoIdCache = array();
-
-	/**
-	 * Get Vimeo id
-	 *
-	 * @param File $file
-	 * @return string
-	 */
-	protected function getVideoId(File $file) {
-		if (!array_key_exists($file->getUid(), $this->videoIdCache)) {
-			// By definition these files contain the video ID
-			$this->videoIdCache[$file->getUid()] = trim($file->getContents());
-		}
-		return $this->videoIdCache[$file->getUid()];
-	}
 
 	/**
 	 * Get video info from Vimeo
@@ -95,7 +75,7 @@ class VimeoHelper implements OnlineMediaHelperInterface {
 	 * @return string|NULL
 	 */
 	public function getPublicUrl(AbstractFile $file, $relativeToCurrentScript = FALSE) {
-		$videoId = $this->getVideoId($file);
+		$videoId = $this->getOnlineMediaId($file);
 		return sprintf('http://vimeo.com/%s', $videoId);
 	}
 
@@ -112,7 +92,7 @@ class VimeoHelper implements OnlineMediaHelperInterface {
 	public function getContentObjectRendererTemplateAndSource(&$template, &$source, File $file, array $config, ContentObjectRenderer $contentObjectRenderer) {
 		// todo: add min width check, maybe read from TypoScript?
 		if (TRUE) {
-			$videoId = $this->getVideoId($file);
+			$videoId = $this->getOnlineMediaId($file);
 			$template = '<iframe width="###WIDTH###" height="###HEIGHT###"' .
 				' src="###SRC###" ###PARAMS######ALTPARAMS######BORDER### ' .
 				' frameborder="0" allowfullscreen></iframe>';
@@ -131,7 +111,7 @@ class VimeoHelper implements OnlineMediaHelperInterface {
 	 * @return string
 	 */
 	public function renderTag(TagBuilder $tag, FileInterface $file, $additionalConfig = array(), $width = '', $height = '') {
-		$videoId = $this->getVideoId($file);
+		$videoId = $this->getOnlineMediaId($file);
 		$tag->setTagName('iframe');
 		$tag->forceClosingTag(TRUE);
 
@@ -158,7 +138,7 @@ class VimeoHelper implements OnlineMediaHelperInterface {
 	 * @return string
 	 */
 	public function getPreviewImage(File $file) {
-		$videoId = $this->getVideoId($file);
+		$videoId = $this->getOnlineMediaId($file);
 		$videoInfo = $this->getVideoInfo($videoId);
 		if (!empty($videoInfo)) {
 			$temporaryFileName = PATH_site . 'typo3temp/vimeo_' . md5($videoId) . '.jpg';
@@ -174,6 +154,37 @@ class VimeoHelper implements OnlineMediaHelperInterface {
 	}
 
 	/**
+	 * Try to transform given URL to a File
+	 *
+	 * @param $url
+	 * @param Folder $targetFolder
+	 * @return File|NULL
+	 */
+	public function transformUrlToFile($url, Folder $targetFolder) {
+		$videoId = NULL;
+		if (preg_match('/vimeo\.com\/([0-9]+)/i', $url, $matches)) {
+			$videoId = $matches[1];
+		}
+		if (empty($videoId)) {
+			return NULL;
+		}
+
+		$file = $this->findExisingFileByOnlineMediaId($videoId);
+
+		// no existing file create new
+		if ($file === NULL) {
+			$info = $this->getVideoInfo($videoId);
+			$fileName = $videoId . '.vimeo';
+			if (!empty($info)) {
+				$fileName = $info['title']. '.vimeo';
+			}
+			$file = $this->createNewFile($targetFolder, $fileName, $videoId);
+		}
+
+		return $file;
+	}
+
+	/**
 	 * Get meta data for OnlineMedia item
 	 * See $TCA[sys_file_metadata][columns] for possible fields to fill/use
 	 *
@@ -182,7 +193,7 @@ class VimeoHelper implements OnlineMediaHelperInterface {
 	 */
 	public function getMetaData(File $file) {
 		$metadata = array();
-		$info = $this->getVideoInfo($this->getVideoId($file));
+		$info = $this->getVideoInfo($this->getOnlineMediaId($file));
 
 		if ($info) {
 			// todo: add more fields to index

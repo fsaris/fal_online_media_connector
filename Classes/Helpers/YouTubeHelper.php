@@ -24,9 +24,9 @@ namespace MiniFranske\FalOnlineMediaConnector\Helpers;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-
 use TYPO3\CMS\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -35,28 +35,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 /**
  * Class YouTubeHelper
  */
-class YouTubeHelper implements OnlineMediaHelperInterface {
-
-	/**
-	 * Cached videoIds [fileUid => videoId]
-	 *
-	 * @var array
-	 */
-	protected $videoIdCache = array();
-
-	/**
-	 * Get YouTube video Id
-	 *
-	 * @param File $file
-	 * @return string
-	 */
-	protected function getVideoId(File $file) {
-		if (!array_key_exists($file->getUid(), $this->videoIdCache)) {
-			// By definition these files contain the video ID
-			$this->videoIdCache[$file->getUid()] = trim($file->getContents());
-		}
-		return $this->videoIdCache[$file->getUid()];
-	}
+class YouTubeHelper extends AbstractOnlineMediaHelper {
 
 	/**
 	 * Get public url
@@ -66,7 +45,7 @@ class YouTubeHelper implements OnlineMediaHelperInterface {
 	 * @return string|NULL
 	 */
 	public function getPublicUrl(AbstractFile $file, $relativeToCurrentScript = FALSE) {
-		$videoId = $this->getVideoId($file);
+		$videoId = $this->getOnlineMediaId($file);
 		return sprintf('https://www.youtube.com/watch?v=%s', $videoId);
 	}
 
@@ -84,7 +63,7 @@ class YouTubeHelper implements OnlineMediaHelperInterface {
 
 		// todo: add min width check, maybe read from TypoScript?
 		if (TRUE) {
-			$videoId = $this->getVideoId($file);
+			$videoId = $this->getOnlineMediaId($file);
 			$template = '<iframe width="###WIDTH###" height="###HEIGHT###"' .
 						' src="###SRC###" ###PARAMS######ALTPARAMS######BORDER### ' .
 						' frameborder="0" allowfullscreen></iframe>';
@@ -103,7 +82,7 @@ class YouTubeHelper implements OnlineMediaHelperInterface {
 	 * @return string|bool
 	 */
 	public function renderTag(TagBuilder $tag, FileInterface $file, $additionalConfig = array(), $width = '', $height = '') {
-		$videoId = $this->getVideoId($file);
+		$videoId = $this->getOnlineMediaId($file);
 
 		$tag->setTagName('iframe');
 		$tag->forceClosingTag(TRUE);
@@ -135,7 +114,7 @@ class YouTubeHelper implements OnlineMediaHelperInterface {
 	 * @return string
 	 */
 	public function getPreviewImage(File $file) {
-		$videoId = $this->getVideoId($file);
+		$videoId = $this->getOnlineMediaId($file);
 		$temporaryFileName = PATH_site .'typo3temp/youtube_' . md5($videoId) . '.jpg';
 
 		if (!file_exists($temporaryFileName)) {
@@ -151,6 +130,37 @@ class YouTubeHelper implements OnlineMediaHelperInterface {
 	}
 
 	/**
+	 * Try to transform given URL to a File
+	 *
+	 * @param string $url
+	 * @param Folder $targetFolder
+	 * @return File|NULL
+	 */
+	public function transformUrlToFile($url, Folder $targetFolder) {
+		$videoId = NULL;
+		if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
+			$videoId = $match[1];
+		}
+		if (empty($videoId)) {
+			return NULL;
+		}
+
+		$file = $this->findExisingFileByOnlineMediaId($videoId);
+
+		// no existing file create new
+		if ($file === NULL) {
+			$info = $this->getYouTubeInfo($videoId);
+			$fileName = $videoId . '.ytb';
+			if (!empty($info)) {
+				$fileName = $info->entry->title->{'$t'} . '.ytb';
+			}
+			$file = $this->createNewFile($targetFolder, $fileName, $videoId);
+		}
+
+		return $file;
+	}
+
+	/**
 	 * Get meta data for OnlineMedia item
 	 *
 	 * @param File $file
@@ -158,7 +168,7 @@ class YouTubeHelper implements OnlineMediaHelperInterface {
 	 */
 	public function getMetaData(File $file) {
 		$metadata = array();
-		$info = $this->getYouTubeInfo($this->getVideoId($file));
+		$info = $this->getYouTubeInfo($this->getOnlineMediaId($file));
 
 		if ($info) {
 			// todo: add more fields to index

@@ -26,6 +26,7 @@ namespace MiniFranske\FalOnlineMediaConnector\Helpers;
 
 use TYPO3\CMS\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
@@ -76,6 +77,15 @@ interface OnlineMediaHelperInterface extends \TYPO3\CMS\Core\SingletonInterface 
 	 * @return string
 	 */
 	public function getPreviewImage(\TYPO3\CMS\Core\Resource\File $file);
+
+	/**
+	 * Try to transform given URL to a File
+	 *
+	 * @param $url
+	 * @param Folder $targetFolder
+	 * @return File|NULL
+	 */
+	public function transformUrlToFile($url, Folder $targetFolder);
 
 	/**
 	 * Get meta data for OnlineMedia item

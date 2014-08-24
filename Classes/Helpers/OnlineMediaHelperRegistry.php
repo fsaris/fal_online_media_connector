@@ -108,4 +108,22 @@ class OnlineMediaHelperRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 		return FALSE;
 	}
+
+	/**
+	 * Try to transform given URL to a File
+	 *
+	 * @param string $url
+	 * @param \TYPO3\CMS\Core\Resource\Folder $targetFolder
+	 * @return \TYPO3\CMS\Core\Resource\File|NULL
+	 */
+	public function transformUrlToFile($url, \TYPO3\CMS\Core\Resource\Folder $targetFolder) {
+		foreach ($this->onlineMediaHelpers as $className) {
+			$helper = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance($className);
+			$file = $helper->transformUrlToFile($url, $targetFolder);
+			if ($file !== NULL) {
+				return $file;
+			}
+		}
+		return NULL;
+	}
 }
