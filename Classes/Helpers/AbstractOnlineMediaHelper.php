@@ -46,6 +46,11 @@ abstract class AbstractOnlineMediaHelper implements OnlineMediaHelperInterface{
 	protected $onlineMediaIdCache = array();
 
 	/**
+	 * @var \TYPO3\CMS\Core\Resource\Index\ExtractorInterface[]
+	 */
+	static protected $extractionServices = NULL;
+
+	/**
 	 * Get Online Media item id
 	 *
 	 * @param File $file
@@ -87,7 +92,43 @@ abstract class AbstractOnlineMediaHelper implements OnlineMediaHelperInterface{
 	protected function createNewFile(Folder $targetFolder, $fileName, $onlineMediaId) {
 		$tempFilePath = GeneralUtility::tempnam('youtube');
 		file_put_contents($tempFilePath, $onlineMediaId);
-		return $targetFolder->addFile($tempFilePath, $fileName, 'changeName');
+		$file = $targetFolder->addFile($tempFilePath, $fileName, 'changeName');
+		$this->runMetaDataExtraction($file);
+		return $file;
+	}
+
+	/**
+	 * Runs the metadata extraction for a given file.
+	 *
+	 * Copied from ext:extractor FileUploadHook
+	 * Todo: move to own service class
+	 *
+	 * @param \TYPO3\CMS\Core\Resource\File $fileObject
+	 * @return void
+	 * @see \TYPO3\CMS\Core\Resource\Index\Indexer::runMetaDataExtraction
+	 */
+	protected function runMetaDataExtraction(\TYPO3\CMS\Core\Resource\File $fileObject) {
+		if (static::$extractionServices === NULL) {
+			$extractorRegistry = \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::getInstance();
+			static::$extractionServices = $extractorRegistry->getExtractorsWithDriverSupport('Local');
+		}
+
+		$newMetaData = array(
+			0 => $fileObject->_getMetaData()
+		);
+		foreach (static::$extractionServices as $service) {
+			if ($service->canProcess($fileObject)) {
+				$newMetaData[$service->getPriority()] = $service->extractMetaData($fileObject, $newMetaData);
+			}
+		}
+		ksort($newMetaData);
+		$metaData = array();
+		foreach ($newMetaData as $data) {
+			$metaData = array_merge($metaData, $data);
+		}
+		$fileObject->_updateMetaDataProperties($metaData);
+		$metaDataRepository = \TYPO3\CMS\Core\Resource\Index\MetaDataRepository::getInstance();
+		$metaDataRepository->update($fileObject->getUid(), $metaData);
 	}
 
 	/**
