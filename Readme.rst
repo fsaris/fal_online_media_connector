@@ -14,11 +14,21 @@ Current supported types:
  - Vimeo (.vimeo)
 
 
-Types todo:
------------
- - SoundCloud
- - SlideShare
- - ...
+Features:
+---------
+ - Editors
+
+  - Possibility to select supported media items just like normal images from element browser
+  - Possibility to supply the link to a media to use direct in content element BE form.
+    The media item get a preview thumbnail and the title and caption fields just like images.
+
+ - Technical
+
+  - Thumbnail/static image preview support
+  - MediaViewHelper to have a generic ViewHelper to show all supported media item types
+  - By default the ImageViewHelper is Xclassed so the new file types are supported out of the box
+  - ContentObjectRenderer is Xclassed so new media items are supported when rendered with TypoScript
+  - Possibility to register your own Online Media item types (see ext_localconf.php for an example how to use the register)
 
 
 Status:
@@ -35,6 +45,7 @@ Requirements:
 Todo:
 -----
 
+ - Add support for more types/online resources
  - Replace core labels so you know you can use other files then images
  - Check if it makes sense to support http://oembed.com/ format
 
