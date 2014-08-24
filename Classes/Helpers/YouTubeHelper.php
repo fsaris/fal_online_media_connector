@@ -181,7 +181,7 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 			$metadata['duration'] = $info->entry->{'media$group'}->{'media$content'}[0]->{'duration'};
 			$metadata['source'] = 'YouTube.com';
 		}
-		$metadata['type'] = \TYPO3\CMS\Core\Resource\File::FILETYPE_VIDEO;
+		$metadata['type'] = File::FILETYPE_VIDEO;
 
 		return $metadata;
 	}
