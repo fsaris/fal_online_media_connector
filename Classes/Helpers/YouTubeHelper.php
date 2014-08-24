@@ -182,6 +182,7 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 			$metadata['source'] = 'YouTube.com';
 		}
 		$metadata['type'] = File::FILETYPE_VIDEO;
+		$metadata['mime_type'] = 'video/youtube';
 
 		return $metadata;
 	}

@@ -94,12 +94,17 @@ class Extractor implements \TYPO3\CMS\Core\Resource\Index\ExtractorInterface {
 		if (($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($file)) !== FALSE) {
 			$metadata = $helper->getMetaData($file);
 
-			// hacky way to set file type
+			// hacky way to set file type and mime_type
 			// todo: find better way
+			$updateFileFields = array();
+			if (!empty($metadata['mime_type']) && $file->getType() !== $metadata['mime_type']) {
+				$updateFileFields['mime_type'] = $metadata['mime_type'];
+			}
 			if (!empty($metadata['type']) && $file->getType() !== $metadata['type']) {
-				$this->getDatabaseConnection()->exec_UPDATEquery('sys_file', 'uid = ' . (int)$file->getUid(), array(
-					'type' => $metadata['type']
-				));
+				$updateFileFields['type'] = $metadata['type'];
+			}
+			if ($updateFileFields !== array()) {
+				$this->getDatabaseConnection()->exec_UPDATEquery('sys_file', 'uid = ' . (int)$file->getUid(), $updateFileFields);
 			}
 		}
 		return $metadata;

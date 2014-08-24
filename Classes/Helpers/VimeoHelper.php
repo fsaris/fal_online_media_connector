@@ -207,6 +207,7 @@ class VimeoHelper extends AbstractOnlineMediaHelper {
 			$metadata['source'] = 'Vimeo.com';
 		}
 		$metadata['type'] = File::FILETYPE_VIDEO;
+		$metadata['mime_type'] = 'video/vimeo';
 
 		return $metadata;
 	}
