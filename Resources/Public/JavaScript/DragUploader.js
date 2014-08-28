@@ -1,4 +1,4 @@
-define('/typo3conf/ext/fal_online_media_connector/Resources/Public/Js/DragUploader', ['TYPO3/CMS/Backend/DragUploader', 'jquery'], function(DragUploader, $) {
+define('TYPO3/CMS/FalOnlineMediaConnector/DragUploader', ['TYPO3/CMS/Backend/DragUploader', 'jquery'], function(DragUploader, $) {
 	$('.t3-drag-uploader').each(function(key, DragUploaderFrame) {
 		var $dragUploaderFrame = $(DragUploaderFrame);
 		if ($dragUploaderFrame.data('file-irre-object')) {

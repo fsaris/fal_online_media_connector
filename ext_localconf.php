@@ -41,9 +41,9 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_iconworks.php']['ov
 
 
 if (TYPO3_MODE === 'BE') {
-	// Register JS
+	// Register JavaScript
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['RequireJS']['postInitializationModules']['TYPO3/CMS/Backend/DragUploader'][]
-		= '/typo3conf/ext/fal_online_media_connector/Resources/Public/Js/DragUploader';
+		= 'TYPO3/CMS/FalOnlineMediaConnector/DragUploader';
 	// Ajax controller
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler (
 		'FalOnlineMediaConnector::onlineMedia',
