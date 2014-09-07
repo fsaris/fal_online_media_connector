@@ -57,7 +57,13 @@ class VimeoHelper extends AbstractOnlineMediaHelper {
 		}
 
 		if ($videoId) {
-			$info = unserialize(file_get_contents("http://vimeo.com/api/v2/video/" . $videoId . ".php"));
+			$info = NULL;
+			$rawInfo = GeneralUtility::getUrl(
+				sprintf('http://vimeo.com/api/v2/video/%s.php', $videoId)
+			);
+			if ($rawInfo) {
+				$info = unserialize($rawInfo);
+			}
 			if (is_array($info)) {
 				$this->infoCache[$videoId] = $info[0];
 				return $info[0];
