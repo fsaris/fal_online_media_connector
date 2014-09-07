@@ -27,8 +27,7 @@ define('TYPO3/CMS/FalOnlineMediaConnector/DragUploader', ['TYPO3/CMS/Backend/Dra
 					);
 				}
 			}
-			$('<label />').text('YouTube/Vimeo link: ').appendTo($container);
-			var $input = $('<input type="name"/>').appendTo($container).on('keypress', function(e){if(e.which === 13) {addOnlineMedia(); return false;}});
+			var $input = $('<input type="name"/>').attr('placeholder', 'Paste media link here...').appendTo($container).on('keypress', function(e){if(e.which === 13) {addOnlineMedia(); return false;}});
 			$('<span />').addClass('t3-button').text('Add').appendTo($container).on('click', addOnlineMedia);
 		}
 	});
