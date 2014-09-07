@@ -59,15 +59,20 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 	 * @param ContentObjectRenderer $contentObjectRenderer
 	 * @return void
 	 */
-	public function getContentObjectRendererTemplateAndSource(&$template, &$source, File $file, array $config, ContentObjectRenderer $contentObjectRenderer) {
+	public function getContentObjectRendererTemplateAndSource(&$template, &$source, File $file, array &$config, ContentObjectRenderer $contentObjectRenderer) {
 
-		// todo: add min width check, maybe read from TypoScript?
-		if (TRUE) {
+		// if linked then don't show iframe
+		if (empty($config['imageLinkWrap'])) {
 			$videoId = $this->getOnlineMediaId($file);
 			$template = '<iframe width="###WIDTH###" height="###HEIGHT###"' .
 						' src="###SRC###" ###PARAMS######ALTPARAMS######BORDER### ' .
 						' frameborder="0" allowfullscreen></iframe>';
 			$source = sprintf('//www.youtube.com/embed/%s?controls=2&showinfo=0', $videoId);
+		}
+
+		// use public url (direct link to video) when linking the 'preview' image
+		if (!empty($config['imageLinkWrap.']['directImageLink'])) {
+			$config['imageLinkWrap.']['typolink.']['parameter.']['data'] = 'file:current:publicUrl';
 		}
 	}
 

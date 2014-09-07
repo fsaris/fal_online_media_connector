@@ -56,7 +56,7 @@ interface OnlineMediaHelperInterface extends \TYPO3\CMS\Core\SingletonInterface 
 	 * @param ContentObjectRenderer $contentObjectRenderer
 	 * @return void
 	 */
-	public function getContentObjectRendererTemplateAndSource(&$template, &$source, File $file, array $config, ContentObjectRenderer $contentObjectRenderer);
+	public function getContentObjectRendererTemplateAndSource(&$template, &$source, File $file, array &$config, ContentObjectRenderer $contentObjectRenderer);
 
 	/**
 	 * Render the tag
