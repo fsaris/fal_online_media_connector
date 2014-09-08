@@ -67,7 +67,9 @@ class OnlineMediaHelperRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 		} elseif (!in_array('MiniFranske\\FalOnlineMediaConnector\\Helpers\\OnlineMediaHelperInterface', class_implements($className))) {
 			throw new \InvalidArgumentException('The helper class needs to implement the OnlineMediaHelperInterface');
 		} elseif (array_key_exists($fileExtension, $this->onlineMediaHelpers)) {
-			throw new \InvalidArgumentException('FileExtension ' . $fileExtension . ' is already registered');
+			if ($this->onlineMediaHelpers[$fileExtension] !== $className) {
+				throw new \InvalidArgumentException('FileExtension ' . $fileExtension . ' is already registered');
+			}
 		} else {
 			$this->onlineMediaHelpers[$fileExtension] = $className;
 
