@@ -65,7 +65,7 @@ class ContentObjectRenderer extends \TYPO3\CMS\Frontend\ContentObject\ContentObj
 
 		/**
 		 * todo: check if we can enhance
-		 * - getImageResource to return source url (HOOK: ContentObjectGetImageResourceHookInterface)
+		 * - Create own cObject type and override Image or adjust default typoscript to use own type (http://buzz.typo3.org/people/steffen-kamper/article/integrating-own-content-elements/)
 		 * - layoutKey stdWrap to check lastImageInfo and return correct template
 		 */
 		if (($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($info['originalFile'])) !== FALSE) {

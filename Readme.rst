@@ -1,5 +1,5 @@
 
-FAL: Online media connector (working name)
+FAL: Online media connector (working title)
 ==========================================
 
 The ame of this extension is to replace all normal image only fields by media fields. A "Text + Images" content element becomes a "Text + Media" and you got the same layout options as before.
