@@ -47,20 +47,20 @@ class MediaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\ImageViewHelper {
 		// get Resource Object (non ExtBase version)
 		$file = $this->imageService->getImage(NULL, $file, FALSE);
 		if ($file instanceof \TYPO3\CMS\Core\Resource\FileReference) {
-			$OriginalFile = $file->getOriginalFile();
+			$originalFile = $file->getOriginalFile();
 		} else {
-			$OriginalFile = $file;
+			$originalFile = $file;
 		}
 
 		// Fallback to imageViewHelper
 		if (
 			!empty($additionalConfig['forceStaticImage'])
 			||
-			($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($OriginalFile)) === FALSE
+			($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($originalFile)) === FALSE
 		) {
 			return parent::render(NULL, $width, $height, NULL, NULL, NULL, NULL, FALSE, $file);
 		}
 
-		return $helper->renderTag($this->tag, $file, $additionalConfig, $width, $height);
+		return $helper->renderTag($this->tag, $originalFile, $additionalConfig, $width, $height);
 	}
 }
