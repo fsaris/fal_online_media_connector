@@ -60,7 +60,7 @@ class MediaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\ImageViewHelper {
 		) {
 			return parent::render(NULL, $width, $height, NULL, NULL, NULL, NULL, FALSE, $file);
 		}
-
-		return $helper->renderTag($this->tag, $originalFile, $additionalConfig, $width, $height);
+		$additionalConfig = array_merge_recursive($this->arguments, $additionalConfig);
+		return $helper->render($originalFile, $width, $height, $additionalConfig);
 	}
 }

@@ -85,10 +85,10 @@ class OnlineMediaHelperRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	/**
-	 * @param \TYPO3\CMS\Core\Resource\AbstractFile $file
+	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
 	 * @return bool|OnlineMediaHelperInterface
 	 */
-	public function getOnlineMediaHelper(\TYPO3\CMS\Core\Resource\AbstractFile $file) {
+	public function getOnlineMediaHelper(\TYPO3\CMS\Core\Resource\FileInterface $file) {
 		if (array_key_exists($file->getExtension(), $this->onlineMediaHelpers)) {
 			return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance($this->onlineMediaHelpers[$file->getExtension()]);
 		}
@@ -98,13 +98,13 @@ class OnlineMediaHelperRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Get icon name for OnlineMedia item
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\AbstractFile $file
+	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
 	 */
 	/**
-	 * @param \TYPO3\CMS\Core\Resource\AbstractFile $file
+	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
 	 * @return string|bool
 	 */
-	public function getIconName(\TYPO3\CMS\Core\Resource\AbstractFile $file) {
+	public function getIconName(\TYPO3\CMS\Core\Resource\FileInterface $file) {
 		if (array_key_exists($file->getExtension(), $this->iconNames)) {
 			return $this->iconNames[$file->getExtension()];
 		}

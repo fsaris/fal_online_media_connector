@@ -24,15 +24,11 @@ namespace MiniFranske\FalOnlineMediaConnector\Helpers;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-
-use TYPO3\CMS\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-
 
 /**
  * Class VimeoHelper
@@ -76,71 +72,53 @@ class VimeoHelper extends AbstractOnlineMediaHelper {
 	 * Get public url
 	 * Return NULL if you want to use core default behaviour
 	 *
-	 * @param AbstractFile $file
+	 * @param FileInterface $file
 	 * @param bool $relativeToCurrentScript
 	 * @return string|NULL
 	 */
-	public function getPublicUrl(AbstractFile $file, $relativeToCurrentScript = FALSE) {
+	public function getPublicUrl(FileInterface $file, $relativeToCurrentScript = FALSE) {
 		$videoId = $this->getOnlineMediaId($file);
 		return sprintf('http://vimeo.com/%s', $videoId);
 	}
 
 	/**
-	 * Adjust template and source for TypoScript rendering
-	 *
-	 * @param string $template
-	 * @param string $source
-	 * @param File $file
-	 * @param array $config
-	 * @param ContentObjectRenderer $contentObjectRenderer
-	 * @return void
-	 */
-	public function getContentObjectRendererTemplateAndSource(&$template, &$source, File $file, array &$config, ContentObjectRenderer $contentObjectRenderer) {
-
-		// if linked then don't show iframe
-		if (empty($config['imageLinkWrap'])) {
-			$videoId = $this->getOnlineMediaId($file);
-			$template = '<iframe width="###WIDTH###" height="###HEIGHT###"' .
-				' src="###SRC###" ###PARAMS######ALTPARAMS######BORDER### ' .
-				' frameborder="0" allowfullscreen></iframe>';
-			$source = sprintf('//player.vimeo.com/video/%s?title=0&amp;byline=0&amp;portrait=0', $videoId);
-		}
-
-		// use public url (direct link to video) when linking the 'preview' image
-		if (!empty($config['imageLinkWrap.']['directImageLink'])) {
-			$config['imageLinkWrap.']['typolink.']['parameter.']['data'] = 'file:current:publicUrl';
-		}
-	}
-
-	/**
 	 * Render the tag
 	 *
-	 * @param TagBuilder $tag
 	 * @param FileInterface $file
-	 * @param array $additionalConfig
 	 * @param integer|string $width TYPO3 known format; examples: 220, 200m or 200c
 	 * @param integer|string $height TYPO3 known format; examples: 220, 200m or 200c
-	 * @return string
+	 * @param array $additionalConfig
+	 * @return string|NULL
 	 */
-	public function renderTag(TagBuilder $tag, FileInterface $file, $additionalConfig = array(), $width = '', $height = '') {
-		$videoId = $this->getOnlineMediaId($file);
-		$tag->setTagName('iframe');
-		$tag->forceClosingTag(TRUE);
-
+	public function render(FileInterface $file, $width = '', $height = '', $additionalConfig = array()) {
+		if ($file instanceof \TYPO3\CMS\Core\Resource\FileReference) {
+			$orgFile = $file->getOriginalFile();
+		} else {
+			$orgFile = $file;
+		}
+		$output = '';
+		$videoId = $this->getOnlineMediaId($orgFile);
+		$attributes = array(
+			'src' => sprintf('//player.vimeo.com/video/%s?title=0&amp;byline=0&amp;portrait=0', $videoId),
+		);
 		$width = (int)$width;
 		if (!empty($width)) {
-			$tag->addAttribute('width', $width);
+			$attributes['width'] = $width;
 		}
 		$height = (int)$height;
 		if (!empty($height)) {
-			$tag->addAttribute('height', $height);
+			$attributes['height'] = $height;
+		}
+		if (is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->config['config']['doctype'] !== 'html5') {
+			$attributes['frameborder'] = '0';
 		}
 
-		$tag->addAttribute('src', sprintf('//player.vimeo.com/video/%s?title=0&amp;byline=0&amp;portrait=0', $videoId));
-		$tag->addAttribute('allowfullscreen', '');
+		foreach ($attributes as $key => $value) {
+			$output .= $key . '="' . $value . '"';
+		}
 
 		// wrap in div so you can make is responsive
-		return '<div class="video-container">' . $tag->render() . '</div>';
+		return '<div class="video-container"><iframe ' . $output . ' allowfullscreen></iframe></div>';
 	}
 
 	/**

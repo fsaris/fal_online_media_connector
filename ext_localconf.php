@@ -1,14 +1,5 @@
 <?php
-/**
- * This source file is proprietary property of Beech Applications B.V.
- * Date: 16-08-2014 15:12
- * All code (c) Beech Applications B.V. all rights reserved
- */
-
-// Extend ContentObjectRenderer to support custom output
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects']['TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer'] = array(
-	'className' => 'MiniFranske\\FalOnlineMediaConnector\\Xclass\\ContentObjectRenderer',
-);
+if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 // Extend/Xclass ImageViewHelper to support custom output
 if (TRUE) { // todo: add switch in ext_configuration
@@ -16,10 +7,19 @@ if (TRUE) { // todo: add switch in ext_configuration
 		'className' => 'MiniFranske\\FalOnlineMediaConnector\\Xclass\\ImageViewHelper',
 	);
 }
+if (TRUE) { // todo: add switch in ext_configuration
+	$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects']['TYPO3\\CMS\\Frontend\\Controller\\ShowImageController'] = array(
+		'className' => 'MiniFranske\\FalOnlineMediaConnector\\Xclass\\ShowImageController',
+	);
+}
 
 // Resource Icon hook
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_iconworks.php']['overrideResourceIcon']['FalOnlineMediaConnector'] =
 	'MiniFranske\\FalOnlineMediaConnector\\Hooks\\IconUtilityHook';
+
+// Media content element rendering hook
+$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['css_styled_content']['pi1_hooks']['render_singleMediaElement']['FalOnlineMediaConnector'] =
+	'MiniFranske\\FalOnlineMediaConnector\\Hooks\\CssStylesContentController->renderSingleMediaElement';
 
 \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::getInstance()->registerExtractionService(
 	'MiniFranske\\FalOnlineMediaConnector\\Metadata\\Extractor'
