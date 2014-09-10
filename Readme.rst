@@ -1,5 +1,5 @@
 
-FAL: Online media connector (working title)
+FAL: Online media connector (working title: proposal 'media_helper')
 ==========================================
 
 The ame of this extension is to replace all normal image only fields by media fields. A "Text + Images" content element becomes a "Text + Media" and you got the same layout options as before.
@@ -27,7 +27,7 @@ Features:
   - Thumbnail/static image preview support
   - MediaViewHelper to have a generic ViewHelper to show all supported media item types
   - By default the ImageViewHelper is Xclassed so the new file types are supported out of the box
-  - ContentObjectRenderer is Xclassed so new media items are supported when rendered with TypoScript
+  - Hook render_singleMediaElement of css_styled_content is used to render online media for with TypoScript
   - Possibility to register your own Online Media item types (see ext_localconf.php for an example how to use the register)
 
 
