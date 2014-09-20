@@ -53,7 +53,7 @@ The extension is still very alpha but it works :)
 
 Requirements:
 -------------
- - TYPO3 => 6.2.4
+- TYPO3 => 6.2.4
 
 
 Todo:

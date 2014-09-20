@@ -26,7 +26,7 @@ namespace MiniFranske\FalOnlineMediaConnector\ViewHelpers;
 
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Extbase\Domain\Model\AbstractFileFolder;
-use MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry;
+use MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry;
 
 /**
  * Class MediaViewHelper
@@ -34,7 +34,7 @@ use MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry;
 class MediaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\ImageViewHelper {
 
 	/**
-	 * Render a given media file (resized if required)
+	 * Render a given media file
 	 *
 	 * @param FileInterface|AbstractFileFolder $file
 	 * @param array $additionalConfig
@@ -46,21 +46,16 @@ class MediaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\ImageViewHelper {
 
 		// get Resource Object (non ExtBase version)
 		$file = $this->imageService->getImage(NULL, $file, FALSE);
-		if ($file instanceof \TYPO3\CMS\Core\Resource\FileReference) {
-			$originalFile = $file->getOriginalFile();
-		} else {
-			$originalFile = $file;
-		}
 
 		// Fallback to imageViewHelper
 		if (
 			!empty($additionalConfig['forceStaticImage'])
 			||
-			($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($originalFile)) === FALSE
+			($fileRenderer = RendererRegistry::getInstance()->getRenderer($file)) === NULL
 		) {
 			return parent::render(NULL, $width, $height, NULL, NULL, NULL, NULL, FALSE, $file);
 		}
 		$additionalConfig = array_merge_recursive($this->arguments, $additionalConfig);
-		return $helper->render($originalFile, $width, $height, $additionalConfig);
+		return $fileRenderer->render($file, $width, $height, $additionalConfig);
 	}
 }

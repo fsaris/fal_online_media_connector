@@ -47,39 +47,28 @@ interface OnlineMediaHelperInterface extends \TYPO3\CMS\Core\SingletonInterface 
 	 *
 	 * Return NULL if you want to use core default behaviour
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param FileInterface $file
 	 * @param bool $relativeToCurrentScript
 	 * @return string|NULL
 	 */
-	public function getPublicUrl(\TYPO3\CMS\Core\Resource\FileInterface $file, $relativeToCurrentScript = FALSE);
-
-	/**
-	 * Render the tag
-	 *
-	 * @param FileInterface $file
-	 * @param integer|string $width TYPO3 known format; examples: 220, 200m or 200c
-	 * @param integer|string $height TYPO3 known format; examples: 220, 200m or 200c
-	 * @param array $additionalConfig
-	 * @return string|NULL
-	 */
-	public function render(FileInterface $file, $width = '', $height = '', $additionalConfig = array());
+	public function getPublicUrl(FileInterface $file, $relativeToCurrentScript = FALSE);
 
 	/**
 	 * Get local absolute file path to preview image
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\File $file
+	 * @param File $file
 	 * @return string
 	 */
-	public function getPreviewImage(\TYPO3\CMS\Core\Resource\File $file);
+	public function getPreviewImage(File $file);
 
 	/**
 	 * Get meta data for OnlineMedia item
 	 *
 	 * See $TCA[sys_file_metadata][columns] for possible fields to fill/use
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\File $file
+	 * @param File $file
 	 * @return array with metadata
 	 */
-	public function getMetaData(\TYPO3\CMS\Core\Resource\File $file);
+	public function getMetaData(File $file);
 
 }

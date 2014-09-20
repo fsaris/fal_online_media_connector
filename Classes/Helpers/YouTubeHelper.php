@@ -48,46 +48,6 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 	}
 
 	/**
-	 * Render the tag
-	 *
-	 * @param FileInterface $file
-	 * @param integer|string $width TYPO3 known format; examples: 220, 200m or 200c
-	 * @param integer|string $height TYPO3 known format; examples: 220, 200m or 200c
-	 * @param array $additionalConfig
-	 * @return string|NULL
-	 */
-	public function render(FileInterface $file, $width = '', $height = '', $additionalConfig = array()) {
-		if ($file instanceof \TYPO3\CMS\Core\Resource\FileReference) {
-			$orgFile = $file->getOriginalFile();
-		} else {
-			$orgFile = $file;
-		}
-		$output = '';
-		$videoId = $this->getOnlineMediaId($orgFile);
-		$attributes = array(
-			'src' => sprintf('//www.youtube.com/embed/%s?controls=2&showinfo=0', $videoId),
-		);
-		$width = (int)$width;
-		if (!empty($width)) {
-			$attributes['width'] = $width;
-		}
-		$height = (int)$height;
-		if (!empty($height)) {
-			$attributes['height'] = $height;
-		}
-		if (is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->config['config']['doctype'] !== 'html5') {
-			$attributes['frameborder'] = '0';
-		}
-
-		foreach ($attributes as $key => $value) {
-			$output .= $key . '="' . $value . '"';
-		}
-
-		// wrap in div so you can make is responsive
-		return '<div class="video-container"><iframe ' . $output . ' allowfullscreen></iframe></div>';
-	}
-
-	/**
 	 * Get local absolute file path to preview image
 	 *
 	 * @param File $file

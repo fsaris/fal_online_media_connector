@@ -7,7 +7,7 @@ namespace MiniFranske\FalOnlineMediaConnector\Hooks;
  * All code (c) Beech Applications B.V. all rights reserved
  */
 
-use MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry;
+use MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry;
 use TYPO3\CMS\CssStyledContent\Controller\CssStyledContentController;
 
 /**
@@ -30,9 +30,9 @@ class CssStylesContentController {
 		$file = $cssStyledContentController->cObj->getCurrentFile();
 		if ($file)
 		$content = NULL;
-		if (!empty($file) && ($helper =OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($file)) !== FALSE) {
+		if (!empty($file) && ($fileRenderer = RendererRegistry::getInstance()->getRenderer($file)) !== NULL) {
 			list($width, $height) = $this->fetchDimensionsFromConfig($parameters['imageConfiguration']['file.']);
-			$content = $helper->render($file, $width, $height, $parameters['imageConfiguration']);
+			$content = $fileRenderer->render($file, $width, $height, $parameters['imageConfiguration']);
 
 			if (isset($parameters['imageConfiguration']['imageLinkWrap.'])) {
 				// @todo: wrap in link?

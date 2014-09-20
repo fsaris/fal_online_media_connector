@@ -24,7 +24,7 @@ namespace MiniFranske\FalOnlineMediaConnector\Xclass;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-use MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry;
+use MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry;
 
 /**
  * Class ShowImageController
@@ -37,9 +37,9 @@ class ShowImageController extends \TYPO3\CMS\Frontend\Controller\ShowImageContro
 	 */
 	public function main() {
 
-		/** @var $helper \MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperInterface */
-		if (($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($this->file)) !== FALSE) {
-			$output = $helper->render($this->file, $this->width, $this->height);
+		/** @var $helper \MiniFranske\FalOnlineMediaConnector\Rendering\FileRendererInterface */
+		if (($fileRenderer = RendererRegistry::getInstance()->getRenderer($this->file)) !== NULL) {
+			$output = $fileRenderer->render($this->file, $this->width, $this->height);
 			$markerArray = array(
 				'###TITLE###' => ($this->file->getProperty('title') ?: $this->title),
 				'###IMAGE###' => $output,
