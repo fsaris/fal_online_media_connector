@@ -113,10 +113,10 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 		if ($info) {
 			// todo: add more fields to index
 			if (!$file->getProperty('title')) {
-				$metadata['title'] = $info->entry->title->{'$t'};
+				$metadata['title'] = strip_tags($info->entry->title->{'$t'});
 			}
 			if (!$file->getProperty('description')) {
-				$metadata['description'] = $info->entry->{'media$group'}->{'media$description'}->{'$t'};
+				$metadata['description'] = strip_tags($info->entry->{'media$group'}->{'media$description'}->{'$t'});
 			}
 			$metadata['duration'] = $info->entry->{'media$group'}->{'media$content'}[0]->{'duration'};
 			$metadata['source'] = 'YouTube.com';
