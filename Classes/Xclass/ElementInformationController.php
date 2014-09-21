@@ -55,6 +55,21 @@ class ElementInformationController extends \TYPO3\CMS\Backend\Controller\Content
 					),
 					TRUE
 				);
+				// temp styles fix. Because of iframe { height: 100%} in main_scaffolding.css an iframe isn't shown correct here
+				// this css makes the iframe embedded video layout responsive
+				$preview .= '<style type="text/css">
+							.video-container {   position: relative;
+								padding-bottom: 56.25%;
+								padding-top: 30px; height: 0; overflow: hidden;
+							}
+							.video-container iframe{
+								position: absolute;
+								top: 0;
+								left: 0;
+								width: 100%;
+								height: 100%;
+							}
+							</style>';
 			} else {
 				$fileExtension = $this->fileObject->getExtension();
 				// Image
