@@ -70,16 +70,16 @@ call_user_func(function($packageKey) {
 	);
 
 	$rendererRegistry = \MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry::getInstance();
-	$rendererRegistry->registerRenderer(
+	$rendererRegistry->registerRendererClass(
 		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\AudioTagRenderer'
 	);
-	$rendererRegistry->registerRenderer(
+	$rendererRegistry->registerRendererClass(
 		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\VideoTagRenderer'
 	);
-	$rendererRegistry->registerRenderer(
+	$rendererRegistry->registerRendererClass(
 		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\VimeoRenderer'
 	);
-	$rendererRegistry->registerRenderer(
+	$rendererRegistry->registerRendererClass(
 		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\YouTubeRenderer'
 	);
 

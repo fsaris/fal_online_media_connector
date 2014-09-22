@@ -50,7 +50,7 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param string $className
 	 * @throws \RuntimeException
 	 */
-	public function registerRenderer($className) {
+	public function registerRendererClass($className) {
 		if (!class_exists($className)) {
 			throw new \RuntimeException('The Class you are registering is not available');
 		} elseif (!in_array('MiniFranske\\FalOnlineMediaConnector\\Rendering\\FileRendererInterface', class_implements($className))) {
