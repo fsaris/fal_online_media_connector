@@ -64,6 +64,14 @@ class VimeoRenderer extends VimeoHelper implements FileRendererInterface {
 	 * @return string
 	 */
 	public function render(FileInterface $file, $width, $height, array $options = NULL, $usedPathsRelativeToCurrentScript = FALSE) {
+
+		if ($file instanceof FileReference) {
+			$autoplay = $file->getProperty('autoplay');
+			if ($autoplay !== NULL) {
+				$options['autoplay'] = $autoplay;
+			}
+		}
+
 		$urlParams = array();
 		if (!isset($options['controls']) || !empty($options['controls'])) {
 			$urlParams[] = 'controls=2';

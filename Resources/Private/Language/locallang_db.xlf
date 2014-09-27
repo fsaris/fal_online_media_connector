@@ -15,6 +15,9 @@
 			<trans-unit id="media.addFileReference" xml:space="preserve">
 				<source>Add media file</source>
 			</trans-unit>
+			<trans-unit id="sys_file_reference.autoplay" xml:space="preserve">
+				<source>Enable Auto play</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>
