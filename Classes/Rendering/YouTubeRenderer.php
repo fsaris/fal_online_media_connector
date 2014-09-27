@@ -64,7 +64,7 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 	 * @return string
 	 */
 	public function render(FileInterface $file, $width, $height, array $options = NULL, $usedPathsRelativeToCurrentScript = FALSE) {
-		$urlParams = array();
+		$urlParams = array('autohide=1');
 		if (!isset($options['controls']) || !empty($options['controls'])) {
 			$urlParams[] = 'controls=2';
 		}
