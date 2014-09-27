@@ -83,4 +83,9 @@ call_user_func(function($packageKey) {
 		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\YouTubeRenderer'
 	);
 
+
+	$pageTsConfig = \TYPO3\CMS\Core\Utility\GeneralUtility::getUrl(
+		\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($packageKey) . 'Configuration/TsConfig/ContentElementWizard.ts');
+	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig($pageTsConfig);
+
 }, $_EXTKEY);
