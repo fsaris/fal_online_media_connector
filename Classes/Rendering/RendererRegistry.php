@@ -48,13 +48,13 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Allows to register a Renderer class
 	 *
 	 * @param string $className
-	 * @throws \RuntimeException
+	 * @throws \InvalidArgumentException
 	 */
 	public function registerRendererClass($className) {
 		if (!class_exists($className)) {
-			throw new \RuntimeException('The Class you are registering is not available');
+			throw new \InvalidArgumentException('The Class you are registering is not available', 1411840174);
 		} elseif (!in_array('MiniFranske\\FalOnlineMediaConnector\\Rendering\\FileRendererInterface', class_implements($className))) {
-			throw new \RuntimeException('The extractor needs to implement the FileRendererInterface');
+			throw new \InvalidArgumentException('The extractor needs to implement the FileRendererInterface', 1411840175);
 		} else {
 			$this->classNames[] = $className;
 		}
@@ -106,13 +106,7 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @return int -1 a > b, 0 a == b, 1 a < b
 	 */
 	protected function compareRendererPriority(FileRendererInterface $rendererA, FileRendererInterface $rendererB) {
-		$return = 0;
-		if ($rendererA->getPriority() < $rendererB->getPriority()) {
-			$return = 1;
-		} elseif ($rendererA->getPriority() > $rendererB->getPriority()) {
-			$return = -1;
-		}
-		return $return;
+		return $rendererB->getPriority() - $rendererA->getPriority();
 	}
 
 	/**
