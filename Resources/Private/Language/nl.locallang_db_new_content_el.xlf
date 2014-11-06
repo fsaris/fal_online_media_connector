@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2014-0-27T14:59:23Z" product-name="fal_online_media_connector">
+		<header/>
+		<body>
+			<trans-unit id="common_textMedia_title" xml:space="preserve">
+				<source>Text &amp; Media</source>
+			</trans-unit>
+			<trans-unit id="common_textMedia_description" xml:space="preserve">
+				<source>Any number of media files (images, videos etc) wrapped right around a regular text element.</source>
+			</trans-unit>
+			<trans-unit id="common_mediaOnly_title" xml:space="preserve">
+				<source>Media Only</source>
+			</trans-unit>
+			<trans-unit id="common_mediaOnly_description" xml:space="preserve">
+				<source>Any number of media files (images, videos etc) aligned in columns and rows with a caption.</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
