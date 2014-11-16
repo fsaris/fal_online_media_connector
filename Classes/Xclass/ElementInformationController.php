@@ -30,6 +30,10 @@ class ElementInformationController extends \TYPO3\CMS\Backend\Controller\Content
 	 * @return string
 	 */
 	protected function renderPreview() {
+		if (!$this->fileObject) {
+			return;
+		}
+
 		$preview = '';
 		$downloadLink = '';
 

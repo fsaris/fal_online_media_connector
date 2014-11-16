@@ -41,7 +41,7 @@ Features:
 - Thumbnail/static image preview support
 - MediaViewHelper to have a generic ViewHelper to show all supported media item types
 - By default the ImageViewHelper is Xclassed so the new file types are supported out of the box
-- Hook render_singleMediaElement of css_styled_content is used to render online media for with TypoScript
+- Hook render_singleMediaElement of css_styled_content is used to render online media with TypoScript
 - Possibility to register your own Online Media item types (see ext_localconf.php for an example how to use the register)
 
 
