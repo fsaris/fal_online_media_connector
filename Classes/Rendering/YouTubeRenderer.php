@@ -14,6 +14,7 @@ namespace MiniFranske\FalOnlineMediaConnector\Rendering;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
 use MiniFranske\FalOnlineMediaConnector\Helpers\YouTubeHelper;
@@ -82,6 +83,9 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 		if (!empty($options['loop'])) {
 			$urlParams[] = 'loop=1';
 		}
+		if (!isset($options['enablejsapi']) || !empty($options['enablejsapi'])) {
+			$urlParams[] = 'enablejsapi=1&origin=' . GeneralUtility::getIndpEnv('HTTP_HOST');
+		}
 		$urlParams[] = 'showinfo=' . (int)!empty($options['showinfo']);
 
 		if ($file instanceof FileReference) {
@@ -94,6 +98,7 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 		$attributes = array(
 			'src' => sprintf('//www.youtube.com/embed/%s?%s', $videoId, implode('&amp;', $urlParams)),
 		);
+
 		$width = (int)$width;
 		if (!empty($width)) {
 			$attributes['width'] = $width;
