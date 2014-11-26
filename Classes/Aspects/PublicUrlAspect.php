@@ -25,6 +25,10 @@ namespace MiniFranske\FalOnlineMediaConnector\Aspects;
  ***************************************************************/
 
 use MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry;
+use TYPO3\CMS\Core\Resource\ResourceStorage;
+use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
+use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\ResourceInterface;
 
 /**
  * Class PublicUrlAspect
@@ -34,16 +38,16 @@ class PublicUrlAspect {
 	/**
 	 * Generate public url for file
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\ResourceStorage $storage
-	 * @param \TYPO3\CMS\Core\Resource\Driver\DriverInterface $driver
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param ResourceStorage $storage
+	 * @param DriverInterface $driver
+	 * @param ResourceInterface $file
 	 * @param $relativeToCurrentScript
 	 * @param array $urlData
 	 * @return void
 	 */
-	public function generatePublicUrl(\TYPO3\CMS\Core\Resource\ResourceStorage $storage, \TYPO3\CMS\Core\Resource\Driver\DriverInterface $driver, \TYPO3\CMS\Core\Resource\FileInterface $file, $relativeToCurrentScript, array $urlData) {
+	public function generatePublicUrl(ResourceStorage $storage, DriverInterface $driver, ResourceInterface $file, $relativeToCurrentScript, array $urlData) {
 
-		if (($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($file)) !== FALSE) {
+		if ($file instanceof FileInterface && ($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($file)) !== FALSE) {
 			// $urlData['publicUrl'] is passed by reference, so we can change that here and the value will be taken into account
 			$urlData['publicUrl'] = $helper->getPublicUrl($file, $relativeToCurrentScript);
 		}
