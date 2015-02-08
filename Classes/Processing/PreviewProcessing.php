@@ -128,7 +128,7 @@ class PreviewProcessing {
 
 			if (file_exists($originalFileName)) {
 				$parameters = '-sample ' . $configuration['width'] . 'x' . $configuration['height'] . ' '
-					. $this->getProcessor()->wrapFileName($originalFileName) . '[0] ' . $this->processor->wrapFileName($temporaryFileName);
+					. $this->wrapFileName($originalFileName) . '[0] ' . $this->wrapFileName($temporaryFileName);
 
 				$cmd = Utility\GeneralUtility::imageMagickCommand('convert', $parameters) . ' 2>&1';
 				Utility\CommandUtility::exec($cmd);
@@ -185,6 +185,25 @@ class PreviewProcessing {
 			// Create a error gif
 			$this->getProcessor()->getTemporaryImageWithText($temporaryFileName, 'No thumb', 'generated!', basename($originalFileName));
 		}
+	}
+
+
+	/**
+	 * Escapes a file name so it can safely be used on the command line.
+	 *
+	 * @param string $inputName filename to safeguard, must not be empty
+	 * @return string $inputName escaped as needed	 *
+	 */
+	protected function wrapFileName($inputName) {
+		if (!empty($GLOBALS['TYPO3_CONF_VARS']['SYS']['UTF8filesystem'])) {
+			$currentLocale = setlocale(LC_CTYPE, 0);
+			setlocale(LC_CTYPE, $GLOBALS['TYPO3_CONF_VARS']['SYS']['systemLocale']);
+			$escapedInputName = escapeshellarg($inputName);
+			setlocale(LC_CTYPE, $currentLocale);
+		} else {
+			$escapedInputName = escapeshellarg($inputName);
+		}
+		return $escapedInputName;
 	}
 
 	/**
