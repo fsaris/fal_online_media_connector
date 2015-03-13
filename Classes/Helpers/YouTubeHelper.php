@@ -89,7 +89,7 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 
 		// no existing file create new
 		if ($file === NULL) {
-			$info = $this->getYouTubeInfo($videoId);
+			$info = $this->getYouTubeGdata($videoId);
 			$fileName = $videoId . '.ytb';
 			if (!empty($info)) {
 				$fileName = $info->entry->title->{'$t'} . '.ytb';
@@ -103,24 +103,39 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 	/**
 	 * Get meta data for OnlineMedia item
 	 *
+	 * Using the meta data from Gdata and Oembed
+	 * Gdata contains more information, but no dimensions
+	 *
 	 * @param File $file
 	 * @return array with metadata
 	 */
 	public function getMetaData(File $file) {
 		$metadata = array();
-		$info = $this->getYouTubeInfo($this->getOnlineMediaId($file));
+		$gdata = $this->getYouTubeGdata($this->getOnlineMediaId($file));
 
-		if ($info) {
+		if ($gdata) {
 			// todo: add more fields to index
 			if (!$file->getProperty('title')) {
-				$metadata['title'] = strip_tags($info->entry->title->{'$t'});
+				$metadata['title'] = strip_tags($gdata->entry->title->{'$t'});
 			}
 			if (!$file->getProperty('description')) {
-				$metadata['description'] = strip_tags($info->entry->{'media$group'}->{'media$description'}->{'$t'});
+				$metadata['description'] = strip_tags($gdata->entry->{'media$group'}->{'media$description'}->{'$t'});
 			}
-			$metadata['duration'] = $info->entry->{'media$group'}->{'media$content'}[0]->{'duration'};
+			$metadata['duration'] = $gdata->entry->{'media$group'}->{'media$content'}[0]->{'duration'};
 			$metadata['source'] = 'YouTube.com';
 		}
+
+		$oembed = $this->getYouTubeOembed($this->getOnlineMediaId($file));
+
+		if ($oembed) {
+			if (!$file->getProperty('width')) {
+				$metadata['width'] = (int) $oembed->width;
+			}
+			if (!$file->getProperty('height')) {
+				$metadata['height'] = (int) $oembed->height;
+			}
+		}
+
 		$metadata['type'] = File::FILETYPE_VIDEO;
 		$metadata['mime_type'] = 'video/youtube';
 
@@ -129,18 +144,34 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 
 
 	/**
-	 * Get YouTube video info
+	 * Get YouTube GData video info
 	 *
 	 * @param string $videoId
 	 * @return array|null
 	 */
-	protected function getYouTubeInfo($videoId) {
-		$info = GeneralUtility::getUrl(
+	protected function getYouTubeGdata($videoId) {
+		$gdata = GeneralUtility::getUrl(
 			sprintf('https://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=json', $videoId)
 		);
-		if ($info) {
-			$info = json_decode($info);
+		if ($gdata) {
+			$gdata = json_decode($gdata);
 		}
-		return $info;
+		return $gdata;
+	}
+
+	/**
+	 * Get YouTube OEmbed video info
+	 *
+	 * @param string $videoId
+	 * @return array|null
+	 */
+	protected function getYouTubeOembed($videoId) {
+		$oembed = GeneralUtility::getUrl(
+			'http://www.youtube.com/oembed?url=' . urlencode(sprintf('http://www.youtube.com/watch?v=%s', $videoId)) . '&format=json'
+		);
+		if ($oembed) {
+			$oembed = json_decode($oembed);
+		}
+		return $oembed;
 	}
 }
