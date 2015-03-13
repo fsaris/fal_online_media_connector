@@ -163,7 +163,7 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 	 */
 	protected function getYouTubeOembed($videoId) {
 		$oembed = GeneralUtility::getUrl(
-			'http://www.youtube.com/oembed?url=' . urlencode(sprintf('http://www.youtube.com/watch?v=%s', $videoId)) . '&format=json'
+			'https://www.youtube.com/oembed?url=' . urlencode(sprintf('http://www.youtube.com/watch?v=%s', $videoId)) . '&format=json'
 		);
 		if ($oembed) {
 			$oembed = json_decode($oembed);
