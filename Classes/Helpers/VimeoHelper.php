@@ -192,6 +192,8 @@ class VimeoHelper extends AbstractOnlineMediaHelper {
 			if (!$file->getProperty('description')) {
 				$metadata['description'] = strip_tags($info['description']);
 			}
+			$metadata['width'] = (int) $info['width'];
+			$metadata['height'] = (int) $info['height'];
 			$metadata['duration'] = $info['duration'];
 			$metadata['source'] = 'Vimeo.com';
 		}
