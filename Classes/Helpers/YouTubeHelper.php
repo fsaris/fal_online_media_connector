@@ -128,12 +128,8 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 		$oembed = $this->getYouTubeOembed($this->getOnlineMediaId($file));
 
 		if ($oembed) {
-			if (!$file->getProperty('width')) {
-				$metadata['width'] = (int) $oembed->width;
-			}
-			if (!$file->getProperty('height')) {
-				$metadata['height'] = (int) $oembed->height;
-			}
+			$metadata['width'] = (int) $oembed->width;
+			$metadata['height'] = (int) $oembed->height;
 		}
 
 		$metadata['type'] = File::FILETYPE_VIDEO;
