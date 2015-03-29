@@ -2,7 +2,7 @@ define('TYPO3/CMS/FalOnlineMediaConnector/DragUploader', ['TYPO3/CMS/Backend/Dra
 	$('.t3-drag-uploader').each(function(key, DragUploaderFrame) {
 		var $dragUploaderFrame = $(DragUploaderFrame);
 		if ($dragUploaderFrame.data('file-irre-object')) {
-			var $container = $('<div />').addClass('online-media').css({display: 'inline-block'}).insertAfter(DragUploaderFrame);
+			var $container = $('<div />').addClass('online-media').css({display: 'inline-block', width: '50%', marginLeft:'4px', verticalAlign:'bottom'}).insertAfter(DragUploaderFrame);
 			function addOnlineMedia() {
 				if ($input.val() !== '') {
 					var value = $input.val();
@@ -28,7 +28,9 @@ define('TYPO3/CMS/FalOnlineMediaConnector/DragUploader', ['TYPO3/CMS/Backend/Dra
 				}
 			}
 			var $input = $('<input type="name"/>').attr('placeholder', 'Paste media link here...').appendTo($container).on('keypress', function(e){if(e.which === 13) {addOnlineMedia(); return false;}});
-			$('<span />').addClass('t3-button').text('Add').appendTo($container).on('click', addOnlineMedia);
+			$input.addClass('form-control');
+			$input.wrap('<div class="input-group"/>');
+			$('<span />').addClass('t3-button input-group-addon btn btn-default').text('Add').insertAfter($input).on('click', addOnlineMedia);
 		}
 	});
 
