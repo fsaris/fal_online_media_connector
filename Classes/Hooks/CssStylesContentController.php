@@ -28,8 +28,9 @@ class CssStylesContentController {
 	public function renderSingleMediaElement($parameters, $cssStyledContentController) {
 		$this->cObj = $cssStyledContentController->cObj;
 		$file = $cssStyledContentController->cObj->getCurrentFile();
-		if ($file)
-		$content = NULL;
+		if ($file) {
+			$content = NULL;
+		}
 		if (!empty($file) && ($fileRenderer = RendererRegistry::getInstance()->getRenderer($file)) !== NULL) {
 			list($width, $height) = $this->fetchDimensionsFromConfig($parameters['imageConfiguration']['file.']);
 			$content = $fileRenderer->render($file, $width, $height, $parameters['imageConfiguration']);
