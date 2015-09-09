@@ -46,9 +46,9 @@ class IconUtilityHook implements \TYPO3\CMS\Backend\Utility\IconUtilityOverrideR
 	 */
 	public function overrideResourceIcon(ResourceInterface $file, &$iconName, array &$options, array &$overlays) {
 
-		if ($file && $file instanceof File) {
-			if (($icon = OnlineMediaHelperRegistry::getInstance()->getIconName($file)) !== FALSE) {
-				$iconName = $icon;
+		if ($file && $file instanceof File && !empty($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['fal_online_media']['icons'])) {
+			if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['fal_online_media']['icons'][$file->getExtension()])) {
+				$iconName = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['fal_online_media']['icons'][$file->getExtension()];
 			}
 		}
 	}

@@ -1,46 +1,39 @@
 <?php
-namespace MiniFranske\FalOnlineMediaConnector\Processing;
+namespace TYPO3\CMS\Core\Resource\OnlineMedia\Processing;
 
-/***************************************************************
- *  Copyright notice
+/*
+ * This file is part of the TYPO3 CMS project.
  *
- *  (c) 20014 Frans Saris <franssaris@gmail.com>
- *  All rights reserved
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
  *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
  *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
-
+ * The TYPO3 project - inspiring people to share!
+ */
+use TYPO3\CMS\Core\Resource\Driver\AbstractDriver;
+use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\ProcessedFile;
+use TYPO3\CMS\Core\Resource\Processing\LocalImageProcessor;
+use TYPO3\CMS\Core\Resource\Service\FileProcessingService;
 use TYPO3\CMS\Core\Utility;
-use MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry;
+use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
+use TYPO3\CMS\Frontend\Imaging\GifBuilder;
 
 /**
  * Preview of Online Media item Processing
- *
- * Inspired by code from Helmut Hummel (https://gist.github.com/helhum/e4a6cbdfd18c4f2f59f7)
  */
 class PreviewProcessing {
 
 	/**
-	 * @var \TYPO3\CMS\Core\Resource\Processing\LocalImageProcessor
+	 * @var LocalImageProcessor
 	 */
 	protected $processor;
 
 	/**
-	 * @param \TYPO3\CMS\Core\Resource\ProcessedFile $processedFile
+	 * @param ProcessedFile $processedFile
 	 * @return bool
 	 */
 	protected function needsReprocessing($processedFile) {
@@ -53,14 +46,14 @@ class PreviewProcessing {
 	 *
 	 * Create static image preview for Online Media item when possible
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\Service\FileProcessingService $fileProcessingService
-	 * @param \TYPO3\CMS\Core\Resource\Driver\AbstractDriver $driver
-	 * @param \TYPO3\CMS\Core\Resource\ProcessedFile $processedFile
-	 * @param \TYPO3\CMS\Core\Resource\File $file
+	 * @param FileProcessingService $fileProcessingService
+	 * @param AbstractDriver $driver
+	 * @param ProcessedFile $processedFile
+	 * @param File $file
 	 * @param string $taskType
 	 * @param array $configuration
 	 */
-	public function processFile(\TYPO3\CMS\Core\Resource\Service\FileProcessingService $fileProcessingService, \TYPO3\CMS\Core\Resource\Driver\AbstractDriver $driver, \TYPO3\CMS\Core\Resource\ProcessedFile $processedFile, \TYPO3\CMS\Core\Resource\File $file, $taskType, array $configuration) {
+	public function processFile(FileProcessingService $fileProcessingService, AbstractDriver $driver, ProcessedFile $processedFile, File $file, $taskType, array $configuration) {
 
 		if (!in_array($taskType, array('Image.Preview', 'Image.CropScaleMask'))) {
 			return;
@@ -76,7 +69,6 @@ class PreviewProcessing {
 
 		$temporaryFileName = $helper->getPreviewImage($file);
 		$temporaryFileNameForResizedThumb = uniqid(PATH_site . 'typo3temp/online_media_' . $file->getHashedIdentifier()) . '.jpg';
-
 		switch ($taskType) {
 			case 'Image.Preview':
 				// Merge custom configuration with default configuration
@@ -109,11 +101,11 @@ class PreviewProcessing {
 	}
 
 	/**
-	 * @param \TYPO3\CMS\Core\Resource\ProcessedFile $processedFile
+	 * @param ProcessedFile $processedFile
 	 * @param string $prefix
 	 * @return string
 	 */
-	protected function getTargetFileName(\TYPO3\CMS\Core\Resource\ProcessedFile $processedFile, $prefix = 'preview_') {
+	protected function getTargetFileName(ProcessedFile $processedFile, $prefix = 'preview_') {
 		return $prefix . $processedFile->getTask()->getConfigurationChecksum() . '_' . $processedFile->getOriginalFile()->getNameWithoutExtension() . '.jpg';
 	}
 
@@ -124,19 +116,26 @@ class PreviewProcessing {
 	 */
 	protected function resizeImage($originalFileName, $temporaryFileName, $configuration) {
 		// Create the temporary file
-		if ($GLOBALS['TYPO3_CONF_VARS']['GFX']['im']) {
+		if (!empty($GLOBALS['TYPO3_CONF_VARS']['GFX']['im'])) {
 
 			if (file_exists($originalFileName)) {
-				$parameters = '-sample ' . $configuration['width'] . 'x' . $configuration['height'] . ' '
-					. $this->wrapFileName($originalFileName) . '[0] ' . $this->wrapFileName($temporaryFileName);
+				$arguments = self::escapeShellArguments([
+					'width' => $configuration['width'],
+					'height' => $configuration['height'],
+					'originalFileName' => $originalFileName,
+					'temporaryFileName' => $temporaryFileName,
+				]);
+				$parameters = '-sample ' . $arguments['width'] . 'x' . $arguments['height'] . ' '
+					. $arguments['originalFileName'] . '[0] ' . $arguments['temporaryFileName'];
 
 				$cmd = Utility\GeneralUtility::imageMagickCommand('convert', $parameters) . ' 2>&1';
 				Utility\CommandUtility::exec($cmd);
 			}
 
 			if (!file_exists($temporaryFileName)) {
-				// Create a error gif
-				$this->getProcessor()->getTemporaryImageWithText($temporaryFileName, 'No thumb', 'generated!', basename($originalFileName));
+				// Create a error image
+				$graphicalFunctions = $this->getGraphicalFunctionsObject();
+				$graphicalFunctions->getTemporaryImageWithText($temporaryFileName, 'No thumb', 'generated!', basename($originalFileName));
 			}
 		}
 	}
@@ -144,16 +143,14 @@ class PreviewProcessing {
 	/**
 	 * cropScaleImage
 	 *
-	 * todo: cleanup function
-	 *
-	 * @param $originalFileName
-	 * @param $temporaryFileName
-	 * @param $configuration
+	 * @param string $originalFileName
+	 * @param string $temporaryFileName
+	 * @param array $configuration
 	 */
 	protected function cropScaleImage($originalFileName, $temporaryFileName, $configuration) {
 		if (file_exists($originalFileName)) {
-			/** @var $gifBuilder \TYPO3\CMS\Frontend\Imaging\GifBuilder */
-			$gifBuilder = Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Imaging\\GifBuilder');
+			/** @var $gifBuilder GifBuilder */
+			$gifBuilder = Utility\GeneralUtility::makeInstance(GifBuilder::class);
 			$gifBuilder->init();
 
 			$options = $this->getConfigurationForImageCropScaleMask($configuration, $gifBuilder);
@@ -163,9 +160,8 @@ class PreviewProcessing {
 			$info[0] = $data[0];
 			$info[1] = $data[1];
 			$frame = '';
-	//		if (!$params) {
 			$params = $gifBuilder->cmds['jpg'];
-	//		}
+
 			// Cropscaling:
 			if ($data['crs']) {
 				if (!$data['origW']) {
@@ -182,11 +178,11 @@ class PreviewProcessing {
 			$gifBuilder->imageMagickExec($originalFileName, $temporaryFileName, $command, $frame);
 		}
 		if (!file_exists($temporaryFileName)) {
-			// Create a error gif
-			$this->getProcessor()->getTemporaryImageWithText($temporaryFileName, 'No thumb', 'generated!', basename($originalFileName));
+			// Create a error image
+			$graphicalFunctions = $this->getGraphicalFunctionsObject();
+			$graphicalFunctions->getTemporaryImageWithText($temporaryFileName, 'No thumb', 'generated!', basename($originalFileName));
 		}
 	}
-
 
 	/**
 	 * Escapes a file name so it can safely be used on the command line.
@@ -207,35 +203,27 @@ class PreviewProcessing {
 	}
 
 	/**
-	 * @return \TYPO3\CMS\Core\Resource\Processing\LocalImageProcessor
-	 */
-	protected function getProcessor() {
-		if (!$this->processor) {
-			$this->processor = Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\Processing\\LocalImageProcessor');
-		}
-		return $this->processor;
-	}
-
-	/**
+	 * Get configuration for ImageCropScaleMask processing
+	 *
 	 * @param array $configuration
-	 * @param \TYPO3\CMS\Frontend\Imaging\GifBuilder $gifBuilder
+	 * @param GifBuilder $gifBuilder
 	 * @return array
 	 */
-	protected function getConfigurationForImageCropScaleMask($configuration, \TYPO3\CMS\Frontend\Imaging\GifBuilder $gifBuilder) {
-		if ($configuration['useSample']) {
+	protected function getConfigurationForImageCropScaleMask($configuration, GifBuilder $gifBuilder) {
+		if (!empty($configuration['useSample'])) {
 			$gifBuilder->scalecmd = '-sample';
 		}
 		$options = array();
-		if ($configuration['maxWidth']) {
+		if (!empty($configuration['maxWidth'])) {
 			$options['maxW'] = $configuration['maxWidth'];
 		}
-		if ($configuration['maxHeight']) {
+		if (!empty($configuration['maxHeight'])) {
 			$options['maxH'] = $configuration['maxHeight'];
 		}
-		if ($configuration['minWidth']) {
+		if (!empty($configuration['minWidth'])) {
 			$options['minW'] = $configuration['minWidth'];
 		}
-		if ($configuration['minHeight']) {
+		if (!empty($configuration['minHeight'])) {
 			$options['minH'] = $configuration['minHeight'];
 		}
 
@@ -243,4 +231,50 @@ class PreviewProcessing {
 
 		return $options;
 	}
+
+	/**
+	 * Escape shell arguments (for example filenames) to be used on the local system.
+	 *
+	 * The setting UTF8filesystem will be taken into account.
+	 *
+	 * @param string[] $input Input arguments to be escaped
+	 * @return string[] Escaped shell arguments
+	 */
+	static public function escapeShellArguments(array $input) {
+		$isUTF8Filesystem = !empty($GLOBALS['TYPO3_CONF_VARS']['SYS']['UTF8filesystem']);
+		if ($isUTF8Filesystem) {
+			$currentLocale = setlocale(LC_CTYPE, 0);
+			setlocale(LC_CTYPE, $GLOBALS['TYPO3_CONF_VARS']['SYS']['systemLocale']);
+		}
+
+		$output = array_map('escapeshellarg', $input);
+
+		if ($isUTF8Filesystem) {
+			setlocale(LC_CTYPE, $currentLocale);
+		}
+
+		return $output;
+	}
+
+	/**
+	 * @return \TYPO3\CMS\Core\Resource\Processing\LocalImageProcessor
+	 */
+	protected function getProcessor() {
+		if (!$this->processor) {
+			$this->processor = Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Processing\LocalImageProcessor::class);
+		}
+		return $this->processor;
+	}
+
+	/**
+	 * @return \TYPO3\CMS\Core\Imaging\GraphicalFunctions
+	 */
+	protected function getGraphicalFunctionsObject() {
+		static $graphicalFunctionsObject = NULL;
+		if ($graphicalFunctionsObject === NULL) {
+			$graphicalFunctionsObject = Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\GraphicalFunctions::class);
+		}
+		return $graphicalFunctionsObject;
+	}
+
 }

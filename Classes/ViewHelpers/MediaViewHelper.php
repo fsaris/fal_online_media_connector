@@ -26,7 +26,7 @@ namespace MiniFranske\FalOnlineMediaConnector\ViewHelpers;
 
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Extbase\Domain\Model\AbstractFileFolder;
-use MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry;
+use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 
 /**
  * Class MediaViewHelper

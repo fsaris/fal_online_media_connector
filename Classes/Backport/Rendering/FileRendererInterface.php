@@ -1,7 +1,7 @@
 <?php
-namespace MiniFranske\FalOnlineMediaConnector\Rendering;
+namespace TYPO3\CMS\Core\Resource\Rendering;
 
-/**
+/*
  * This file is part of the TYPO3 CMS project.
  *
  * It is free software; you can redistribute it and/or modify it under
@@ -30,27 +30,27 @@ interface FileRendererInterface extends \TYPO3\CMS\Core\SingletonInterface {
 	 *
 	 * Should be between 1 and 100, 100 is more important than 1
 	 *
-	 * @return integer
+	 * @return int
 	 */
 	public function getPriority();
 
 	/**
 	 * Check if given File(Reference) can be rendered
 	 *
-	 * @param FileInterface $file File of FileReference to render
+	 * @param FileInterface $file File or FileReference to render
 	 * @return bool
 	 */
 	public function canRender(FileInterface $file);
 
 	/**
-	 * Render for given File(Reference) html output
+	 * Render for given File(Reference) HTML output
 	 *
 	 * @param FileInterface $file
-	 * @param integer|string $width TYPO3 known format; examples: 220, 200m or 200c
-	 * @param integer|string $height TYPO3 known format; examples: 220, 200m or 200c
+	 * @param int|string $width TYPO3 known format; examples: 220, 200m or 200c
+	 * @param int|string $height TYPO3 known format; examples: 220, 200m or 200c
 	 * @param array $options
 	 * @param bool $usedPathsRelativeToCurrentScript See $file->getPublicUrl()
 	 * @return string
 	 */
-	public function render(FileInterface $file, $width, $height, array $options = NULL, $usedPathsRelativeToCurrentScript = FALSE);
+	public function render(FileInterface $file, $width, $height, array $options = array(), $usedPathsRelativeToCurrentScript = FALSE);
 }

@@ -10,3 +10,10 @@ if (!defined('TYPO3_MODE')) {
 	'youtube' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/youtube.png',
 	'vimeo' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/vimeo.png',
 ), 'online-media');
+
+
+// Register online_media
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModulePath(
+	'online_media',
+	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Modules/OnlineMedia/'
+);

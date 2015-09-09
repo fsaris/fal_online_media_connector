@@ -7,8 +7,9 @@ namespace MiniFranske\FalOnlineMediaConnector\Hooks;
  * All code (c) Beech Applications B.V. all rights reserved
  */
 
-use MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry;
+use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\CssStyledContent\Controller\CssStyledContentController;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /**
  * Class CssStylesContentController

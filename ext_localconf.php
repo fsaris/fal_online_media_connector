@@ -30,22 +30,28 @@ call_user_func(function($packageKey) {
 		'MiniFranske\\FalOnlineMediaConnector\\Hooks\\CssStylesContentController->renderSingleMediaElement';
 
 	\TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::getInstance()->registerExtractionService(
-		'MiniFranske\\FalOnlineMediaConnector\\Metadata\\Extractor'
+		\TYPO3\CMS\Core\Resource\OnlineMedia\Metadata\Extractor::class
 	);
-
-	\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher')->connect(
+	$signalSlotDispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
+	$signalSlotDispatcher->connect(
 		'TYPO3\\CMS\\Core\\Resource\\ResourceStorage',
 		\TYPO3\CMS\Core\Resource\Service\FileProcessingService::SIGNAL_PreFileProcess,
-		'MiniFranske\\FalOnlineMediaConnector\\Processing\\PreviewProcessing',
+		\TYPO3\CMS\Core\Resource\OnlineMedia\Processing\PreviewProcessing::class,
 		'processFile'
 	);
-
-	\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher')->connect(
+	$signalSlotDispatcher->connect(
+		'TYPO3\\CMS\\Core\\Resource\\ResourceStorage',
+		\TYPO3\CMS\Core\Resource\ResourceStorage::SIGNAL_PostFileAdd,
+		\MiniFranske\FalOnlineMediaConnector\Hooks\ResourceStorageSlots::class,
+		'postFileAdd'
+	);
+	$signalSlotDispatcher->connect(
 		'TYPO3\\CMS\\Core\\Resource\\ResourceStorage',
 		\TYPO3\CMS\Core\Resource\ResourceStorage::SIGNAL_PreGeneratePublicUrl,
-		'MiniFranske\\FalOnlineMediaConnector\\Aspects\\PublicUrlAspect',
+		\MiniFranske\FalOnlineMediaConnector\Hooks\ResourceStorageSlots::class,
 		'generatePublicUrl'
 	);
+	unset($signalSlotDispatcher);
 
 	if (TYPO3_MODE === 'BE') {
 		// Register JavaScript
@@ -54,38 +60,47 @@ call_user_func(function($packageKey) {
 		// Ajax controller
 		\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler (
 			'FalOnlineMediaConnector::onlineMedia',
-			'MiniFranske\\FalOnlineMediaConnector\\Ajax\\OnlineMediaController->add'
+			'MiniFranske\\FalOnlineMediaConnector\\Controller\\OnlineMediaController->addAjaxAction'
 		);
 	}
-	$onlineMediaHelperRegistry = \MiniFranske\FalOnlineMediaConnector\Helpers\OnlineMediaHelperRegistry::getInstance();
-	$onlineMediaHelperRegistry->registerOnlineMediaFileExtension(
-		'ytb',
-		'MiniFranske\\FalOnlineMediaConnector\\Helpers\\YouTubeHelper',
-		'extensions-online-media-youtube'
-	);
-	$onlineMediaHelperRegistry->registerOnlineMediaFileExtension(
-		'vimeo',
-		'MiniFranske\\FalOnlineMediaConnector\\Helpers\\VimeoHelper',
-		'extensions-online-media-vimeo'
-	);
 
-	$rendererRegistry = \MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry::getInstance();
-	$rendererRegistry->registerRendererClass(
-		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\AudioTagRenderer'
-	);
-	$rendererRegistry->registerRendererClass(
-		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\VideoTagRenderer'
-	);
-	$rendererRegistry->registerRendererClass(
-		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\VimeoRenderer'
-	);
-	$rendererRegistry->registerRendererClass(
-		'MiniFranske\\FalOnlineMediaConnector\\Rendering\\YouTubeRenderer'
-	);
+	// Online media helpers
+	if (!isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'])) {
+		$GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] = array(
+			'youtube' => \TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\YouTubeHelper::class,
+			'vimeo' => \TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\VimeoHelper::class,
+		);
+	}
+	$GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'] .= ',youtube,vimeo';
+	$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['fal_online_media']['icons']['youtube'] = 'extensions-online-media-youtube';
+	$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['fal_online_media']['icons']['vimeo'] = 'extensions-online-media-vimeo';
 
+	// Static mapping for file extensions to mime types.
+	if (!isset($GLOBALS['TYPO3_CONF_VARS']['FileInfo']['fileExtensionToMimeType'])) {
+		$GLOBALS['TYPO3_CONF_VARS']['FileInfo']['fileExtensionToMimeType'] = array();
+	}
+	$GLOBALS['TYPO3_CONF_VARS']['FileInfo']['fileExtensionToMimeType']['youtube'] = 'video/youtube';
+	$GLOBALS['TYPO3_CONF_VARS']['FileInfo']['fileExtensionToMimeType']['vimeo'] = 'video/vimeo';
+
+	// Renderers
+	$rendererRegistry = \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::getInstance();
+	$rendererRegistry->registerRendererClass(
+		\TYPO3\CMS\Core\Resource\Rendering\AudioTagRenderer::class
+	);
+	$rendererRegistry->registerRendererClass(
+		\TYPO3\CMS\Core\Resource\Rendering\VideoTagRenderer::class
+	);
+	$rendererRegistry->registerRendererClass(
+		\TYPO3\CMS\Core\Resource\Rendering\VimeoRenderer::class
+	);
+	$rendererRegistry->registerRendererClass(
+		\TYPO3\CMS\Core\Resource\Rendering\YouTubeRenderer::class
+	);
+	unset($rendererRegistry);
 
 	$pageTsConfig = \TYPO3\CMS\Core\Utility\GeneralUtility::getUrl(
-		\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($packageKey) . 'Configuration/TsConfig/ContentElementWizard.ts');
+		\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($packageKey) . 'Configuration/TsConfig/ContentElementWizard.ts'
+	);
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig($pageTsConfig);
 
 }, $_EXTKEY);

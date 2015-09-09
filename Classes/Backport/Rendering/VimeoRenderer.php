@@ -1,7 +1,7 @@
 <?php
-namespace MiniFranske\FalOnlineMediaConnector\Rendering;
+namespace TYPO3\CMS\Core\Resource\Rendering;
 
-/**
+/*
  * This file is part of the TYPO3 CMS project.
  *
  * It is free software; you can redistribute it and/or modify it under
@@ -14,22 +14,23 @@ namespace MiniFranske\FalOnlineMediaConnector\Rendering;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperInterface;
+use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
+use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\VimeoHelper;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
-use MiniFranske\FalOnlineMediaConnector\Helpers\YouTubeHelper;
+use TYPO3\CMS\Core\Resource\Rendering\FileRendererInterface;
 
 /**
- * Class VideoTagRenderer
+ * Vimeo renderer class
  */
-class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
+class VimeoRenderer implements FileRendererInterface {
 
 	/**
-	 * Cached OnlineMediaIds [fileUid => id]
-	 *
-	 * @var array
+	 * @var OnlineMediaHelperInterface
 	 */
-	protected $onlineMediaIdCache = array();
+	protected $onlineMediaHelper;
 
 	/**
 	 * Returns the priority of the renderer
@@ -38,7 +39,7 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 	 * For example create a video renderer for a certain storage/driver type.
 	 * Should be between 1 and 100, 100 is more important than 1
 	 *
-	 * @return integer
+	 * @return int
 	 */
 	public function getPriority() {
 		return 1;
@@ -51,15 +52,36 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 	 * @return bool
 	 */
 	public function canRender(FileInterface $file) {
-		return $file->getMimeType() === 'video/youtube' || $file->getExtension() === 'ytb';
+		return ($file->getMimeType() === 'video/vimeo' || $file->getExtension() === 'vimeo') && $this->getOnlineMediaHelper($file) !== FALSE;
+	}
+
+	/**
+	 * Get online media helper
+	 *
+	 * @param FileInterface $file
+	 * @return bool|OnlineMediaHelperInterface
+	 */
+	protected function getOnlineMediaHelper(FileInterface $file) {
+		if ($this->onlineMediaHelper === NULL) {
+			$orgFile = $file;
+			if ($orgFile instanceof FileReference) {
+				$orgFile = $orgFile->getOriginalFile();
+			}
+			if ($orgFile instanceof File) {
+				$this->onlineMediaHelper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($orgFile);
+			} else {
+				$this->onlineMediaHelper = FALSE;
+			}
+		}
+		return $this->onlineMediaHelper;
 	}
 
 	/**
 	 * Render for given File(Reference) html output
 	 *
 	 * @param FileInterface $file
-	 * @param integer|string $width TYPO3 known format; examples: 220, 200m or 200c
-	 * @param integer|string $height TYPO3 known format; examples: 220, 200m or 200c
+	 * @param int|string $width TYPO3 known format; examples: 220, 200m or 200c
+	 * @param int|string $height TYPO3 known format; examples: 220, 200m or 200c
 	 * @param array $options
 	 * @param bool $usedPathsRelativeToCurrentScript See $file->getPublicUrl()
 	 * @return string
@@ -73,7 +95,7 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 			}
 		}
 
-		$urlParams = array('autohide=1');
+		$urlParams = array();
 		if (!isset($options['controls']) || !empty($options['controls'])) {
 			$urlParams[] = 'controls=2';
 		}
@@ -83,10 +105,9 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 		if (!empty($options['loop'])) {
 			$urlParams[] = 'loop=1';
 		}
-		if (!isset($options['enablejsapi']) || !empty($options['enablejsapi'])) {
-			$urlParams[] = 'enablejsapi=1&origin=' . GeneralUtility::getIndpEnv('HTTP_HOST');
-		}
-		$urlParams[] = 'showinfo=' . (int)!empty($options['showinfo']);
+		$urlParams[] = 'title=' . (int)!empty($options['showinfo']);
+		$urlParams[] = 'byline=' . (int)!empty($options['showinfo']);
+		$urlParams[] = 'portrait=0';
 
 		if ($file instanceof FileReference) {
 			$orgFile = $file->getOriginalFile();
@@ -94,11 +115,10 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 			$orgFile = $file;
 		}
 
-		$videoId = $this->getOnlineMediaId($orgFile);
+		$videoId = $this->getOnlineMediaHelper($file)->getOnlineMediaId($orgFile);
 		$attributes = array(
-			'src' => sprintf('//www.youtube.com/embed/%s?%s', $videoId, implode('&amp;', $urlParams)),
+			'src' => sprintf('//player.vimeo.com/video/%s?%s', $videoId, implode('&amp;', $urlParams)),
 		);
-
 		$width = (int)$width;
 		if (!empty($width)) {
 			$attributes['width'] = $width;
@@ -112,10 +132,10 @@ class YouTubeRenderer extends YouTubeHelper implements FileRendererInterface {
 		}
 		$output = '';
 		foreach ($attributes as $key => $value) {
-			$output .= $key . '="' . $value . '"';
+			$output .= $key . '="' . htmlspecialchars($value) . '" ';
 		}
 
 		// wrap in div so you can make is responsive
-		return '<div class="video-container"><iframe ' . $output . ' allowfullscreen></iframe></div>';
+		return '<div class="video-container"><iframe ' . $output . 'allowfullscreen></iframe></div>';
 	}
 }

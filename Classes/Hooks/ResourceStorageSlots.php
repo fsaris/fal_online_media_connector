@@ -1,5 +1,5 @@
 <?php
-namespace MiniFranske\FalOnlineMediaConnector\Helpers;
+namespace MiniFranske\FalOnlineMediaConnector\Hooks;
 
 /***************************************************************
  *  Copyright notice
@@ -25,25 +25,17 @@ namespace MiniFranske\FalOnlineMediaConnector\Helpers;
  ***************************************************************/
 
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\Folder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
+use TYPO3\CMS\Core\Resource\ResourceStorage;
+use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
+use TYPO3\CMS\Core\Resource\ResourceInterface;
 
 /**
- * Class AbstractOnlineMediaHelper
+ * Class ResourceStorageSlots
  */
-abstract class AbstractOnlineMediaHelper implements OnlineMediaHelperInterface{
-
-	/**
-	 * @var array
-	 */
-	protected $infoCache = array();
-
-	/**
-	 * Cached OnlineMediaIds [fileUid => id]
-	 *
-	 * @var array
-	 */
-	protected $onlineMediaIdCache = array();
+class ResourceStorageSlots {
 
 	/**
 	 * @var \TYPO3\CMS\Core\Resource\Index\ExtractorInterface[]
@@ -51,50 +43,58 @@ abstract class AbstractOnlineMediaHelper implements OnlineMediaHelperInterface{
 	static protected $extractionServices = NULL;
 
 	/**
-	 * Get Online Media item id
+	 * Generate public url for file
 	 *
-	 * @param File $file
-	 * @return string
+	 * @param ResourceStorage $storage
+	 * @param DriverInterface $driver
+	 * @param ResourceInterface $file
+	 * @param $relativeToCurrentScript
+	 * @param array $urlData
+	 * @return void
 	 */
-	protected function getOnlineMediaId(File $file) {
-		if (!array_key_exists($file->getUid(), $this->onlineMediaIdCache)) {
-			// By definition these files contain the ID
-			$this->onlineMediaIdCache[$file->getUid()] = trim($file->getContents());
+	public function generatePublicUrl(ResourceStorage $storage, DriverInterface $driver, ResourceInterface $file, $relativeToCurrentScript, array $urlData) {
+		if ($file instanceof File && ($helper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($file)) !== FALSE) {
+			// $urlData['publicUrl'] is passed by reference, so we can change that here and the value will be taken into account
+			$urlData['publicUrl'] = $helper->getPublicUrl($file, $relativeToCurrentScript);
 		}
-		return $this->onlineMediaIdCache[$file->getUid()];
 	}
 
 	/**
-	 * Search for files with same onlineMediaId by content hash in indexed storage
+	 * Post file add slot
 	 *
-	 * @param $onlineMediaId
-	 * @return File|null
-	 */
-	protected function findExisingFileByOnlineMediaId($onlineMediaId) {
-		$file = NULL;
-		$fileHash = sha1($onlineMediaId);
-		$files = $this->getFileIndexRepository()->findByContentHash($fileHash);
-		if (!empty($files)) {
-			$fileIndexEntry = array_shift($files);
-			$file = $this->getResourceFactory()->getFileObject($fileIndexEntry['uid'], $fileIndexEntry);
-		}
-		return $file;
-	}
-
-	/**
-	 * Create new OnlineMedia item container file
-	 *
+	 * @param FileInterface $file
 	 * @param Folder $targetFolder
-	 * @param string $fileName
-	 * @param string $onlineMediaId
-	 * @return File
 	 */
-	protected function createNewFile(Folder $targetFolder, $fileName, $onlineMediaId) {
-		$tempFilePath = GeneralUtility::tempnam('youtube');
-		file_put_contents($tempFilePath, $onlineMediaId);
-		$file = $targetFolder->addFile($tempFilePath, $fileName, 'changeName');
+	public function postFileAdd(FileInterface $file, Folder $targetFolder) {
+		if (!$file instanceof File) {
+			return;
+		}
+
+		$mimeType = '';
+		if (isset($GLOBALS['TYPO3_CONF_VARS']['FileInfo']['fileExtensionToMimeType'][$file->getExtension()])) {
+			$mimeType = $GLOBALS['TYPO3_CONF_VARS']['FileInfo']['fileExtensionToMimeType'][$file->getExtension()];
+		}
+		if ($mimeType && $file->getMimeType() !== $mimeType) {
+			$this->forceMimeType($file->getUid(), $mimeType);
+		}
+
+		// Extract metadata
 		$this->runMetaDataExtraction($file);
-		return $file;
+	}
+
+	/**
+	 * Force file type and mime_type
+	 *
+	 * Hacky way, is fixed in TYPO3 7
+	 *
+	 * @param int $fileUid
+	 * @param string $mimeType
+	 */
+	protected function forceMimeType($fileUid, $mimeType) {
+		$updateFileFields = array();
+		$updateFileFields['mime_type'] = $mimeType;
+		$updateFileFields['type'] = strpos($mimeType, 'video') !== FALSE ? 4 : 3;
+		$this->getDatabaseConnection()->exec_UPDATEquery('sys_file', 'uid = ' . (int)$fileUid, $updateFileFields);
 	}
 
 	/**
@@ -112,7 +112,6 @@ abstract class AbstractOnlineMediaHelper implements OnlineMediaHelperInterface{
 			$extractorRegistry = \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::getInstance();
 			static::$extractionServices = $extractorRegistry->getExtractorsWithDriverSupport('Local');
 		}
-
 		$newMetaData = array(
 			0 => $fileObject->_getMetaData()
 		);
@@ -148,4 +147,14 @@ abstract class AbstractOnlineMediaHelper implements OnlineMediaHelperInterface{
 	protected function getResourceFactory() {
 		return \TYPO3\CMS\Core\Resource\ResourceFactory::getInstance();
 	}
+
+	/**
+	 * Wrapper method for getting DatabaseConnection
+	 *
+	 * @return \TYPO3\CMS\Core\Database\DatabaseConnection
+	 */
+	protected function getDatabaseConnection() {
+		return $GLOBALS['TYPO3_DB'];
+	}
+
 }

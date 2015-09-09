@@ -45,8 +45,7 @@ class ElementInformationController extends \TYPO3\CMS\Backend\Controller\Content
 		} else {
 
 			// Check if there is a FileRenderer
-			/** @var \MiniFranske\FalOnlineMediaConnector\Rendering\RendererRegistry $rendererRegistry */
-			$rendererRegistry = GeneralUtility::makeInstance('MiniFranske\\FalOnlineMediaConnector\\Rendering\\RendererRegistry');
+			$rendererRegistry = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::class);
 			$fileRenderer = $rendererRegistry->getRenderer($this->fileObject);
 			if ($fileRenderer !== NULL) {
 				$preview = $fileRenderer->render(
@@ -109,4 +108,5 @@ class ElementInformationController extends \TYPO3\CMS\Backend\Controller\Content
 		return ($preview ? '<p>' . $preview . '</p>' : '') .
 		($downloadLink ? '<p>' . $downloadLink . '</p>' : '');
 	}
+
 }

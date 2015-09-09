@@ -1,7 +1,7 @@
 <?php
-namespace MiniFranske\FalOnlineMediaConnector\Rendering;
+namespace TYPO3\CMS\Core\Resource\Rendering;
 
-/**
+/*
  * This file is part of the TYPO3 CMS project.
  *
  * It is free software; you can redistribute it and/or modify it under
@@ -23,13 +23,14 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 
 	/**
-	 * Registered ClassNames
+	 * Registered class names
+	 *
 	 * @var array
 	 */
 	protected $classNames = array();
 
 	/**
-	 * Instance Cache for Renderer classes
+	 * Instance cache for renderer classes
 	 *
 	 * @var FileRendererInterface[]
 	 */
@@ -40,8 +41,8 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	 *
 	 * @return RendererRegistry
 	 */
-	public static function getInstance() {
-		return GeneralUtility::makeInstance('MiniFranske\\FalOnlineMediaConnector\\Rendering\\RendererRegistry');
+	static public function getInstance() {
+		return GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::class);
 	}
 
 	/**
@@ -52,23 +53,24 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	public function registerRendererClass($className) {
 		if (!class_exists($className)) {
-			throw new \InvalidArgumentException('The Class you are registering is not available', 1411840174);
-		} elseif (!in_array('MiniFranske\\FalOnlineMediaConnector\\Rendering\\FileRendererInterface', class_implements($className))) {
-			throw new \InvalidArgumentException('The extractor needs to implement the FileRendererInterface', 1411840175);
+			throw new \InvalidArgumentException('The class "' . $className . '" you are trying to register is not available', 1411840171);
+		} elseif (!in_array(\TYPO3\CMS\Core\Resource\Rendering\FileRendererInterface::class, class_implements($className), TRUE)) {
+			throw new \InvalidArgumentException('The renderer needs to implement the FileRendererInterface', 1411840172);
 		} else {
 			$this->classNames[] = $className;
 		}
 	}
+
 	/**
 	 * Get all registered renderer instances
 	 *
-	 * @return array FileRendererInterface[]
+	 * @return FileRendererInterface[]
 	 */
 	public function getRendererInstances() {
 		if ($this->instances === NULL) {
 			$this->instances = array();
 
-			// as the result is in reverse order we need to reverse
+			// As the result is in reverse order we need to reverse
 			// the array before processing to keep the items with same
 			// priority in the same order as they were added to the registry.
 			$classNames = array_reverse($this->classNames);
@@ -88,7 +90,7 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Create an instance of a certain renderer class
 	 *
-	 * @param $className
+	 * @param string $className
 	 * @return FileRendererInterface
 	 */
 	protected function createRendererInstance($className) {
@@ -96,7 +98,7 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	/**
-	 * Compare the priority of 2 Renderer classes
+	 * Compare the priority of two renderer classes
 	 * Is used for sorting array of Renderer instances by priority
 	 * We want the result to be ordered from high to low so a higher
 	 * priority comes before a lower.
@@ -127,4 +129,5 @@ class RendererRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 		return $matchingFileRenderer;
 	}
+
 }

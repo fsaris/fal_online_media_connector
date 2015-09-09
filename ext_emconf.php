@@ -10,13 +10,14 @@ $EM_CONF[$_EXTKEY] = array(
 	'category' => 'misc',
 	'author' => 'Frans Saris',
 	'author_email' => 'franssaris@gmail.com',
-	'state' => 'alpha',
+	'state' => 'beta',
 	'internal' => '',
 	'clearCacheOnLoad' => 1,
-	'version' => '0.0.1',
+	'version' => '0.1.0-dev',
 	'constraints' => array(
 		'depends' => array(
 			'typo3' => '6.2.4 - 6.2.99',
+			'php' => '5.5'
 		),
 		'conflicts' => array(
 		),
