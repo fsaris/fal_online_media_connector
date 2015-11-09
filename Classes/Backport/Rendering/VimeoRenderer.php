@@ -17,10 +17,8 @@ namespace TYPO3\CMS\Core\Resource\Rendering;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperInterface;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
-use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\VimeoHelper;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
-use TYPO3\CMS\Core\Resource\Rendering\FileRendererInterface;
 
 /**
  * Vimeo renderer class
@@ -87,7 +85,6 @@ class VimeoRenderer implements FileRendererInterface {
 	 * @return string
 	 */
 	public function render(FileInterface $file, $width, $height, array $options = NULL, $usedPathsRelativeToCurrentScript = FALSE) {
-
 		if ($file instanceof FileReference) {
 			$autoplay = $file->getProperty('autoplay');
 			if ($autoplay !== NULL) {
@@ -96,9 +93,6 @@ class VimeoRenderer implements FileRendererInterface {
 		}
 
 		$urlParams = array();
-		if (!isset($options['controls']) || !empty($options['controls'])) {
-			$urlParams[] = 'controls=2';
-		}
 		if (!empty($options['autoplay'])) {
 			$urlParams[] = 'autoplay=1';
 		}
@@ -116,26 +110,28 @@ class VimeoRenderer implements FileRendererInterface {
 		}
 
 		$videoId = $this->getOnlineMediaHelper($file)->getOnlineMediaId($orgFile);
-		$attributes = array(
-			'src' => sprintf('//player.vimeo.com/video/%s?%s', $videoId, implode('&amp;', $urlParams)),
-		);
-		$width = (int)$width;
-		if (!empty($width)) {
-			$attributes['width'] = $width;
+		$src = sprintf('//player.vimeo.com/video/%s?%s', $videoId, implode('&amp;', $urlParams));
+
+		$attributes = ['allowfullscreen'];
+		if ((int)$width > 0) {
+			$attributes[] = 'width="' . (int)$width . '"';
 		}
-		$height = (int)$height;
-		if (!empty($height)) {
-			$attributes['height'] = $height;
+		if ((int)$height > 0) {
+			$attributes[] = 'height="' . (int)$height . '"';
 		}
 		if (is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->config['config']['doctype'] !== 'html5') {
-			$attributes['frameborder'] = '0';
+			$attributes[] = 'frameborder="0"';
 		}
-		$output = '';
-		foreach ($attributes as $key => $value) {
-			$output .= $key . '="' . htmlspecialchars($value) . '" ';
+		foreach (['class', 'dir', 'id', 'lang', 'style', 'title', 'accesskey', 'tabindex', 'onclick'] as $key) {
+			if (!empty($options[$key])) {
+				$attributes[] = $key . '="' . htmlspecialchars($options[$key]) . '"';
+			}
 		}
 
-		// wrap in div so you can make is responsive
-		return '<div class="video-container"><iframe ' . $output . 'allowfullscreen></iframe></div>';
+		return sprintf(
+			'<iframe src="%s"%s></iframe>',
+			$src,
+			empty($attributes) ? '' : ' ' . implode(' ', $attributes)
+		);
 	}
 }

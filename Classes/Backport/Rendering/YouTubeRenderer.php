@@ -1,7 +1,7 @@
 <?php
 namespace TYPO3\CMS\Core\Resource\Rendering;
 
-/**
+/*
  * This file is part of the TYPO3 CMS project.
  *
  * It is free software; you can redistribute it and/or modify it under
@@ -17,8 +17,6 @@ namespace TYPO3\CMS\Core\Resource\Rendering;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperInterface;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
-use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\YouTubeHelper;
-use TYPO3\CMS\Core\Resource\Rendering\FileRendererInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
@@ -88,7 +86,6 @@ class YouTubeRenderer implements FileRendererInterface {
 	 * @return string
 	 */
 	public function render(FileInterface $file, $width, $height, array $options = NULL, $usedPathsRelativeToCurrentScript = FALSE) {
-
 		if ($file instanceof FileReference) {
 			$autoplay = $file->getProperty('autoplay');
 			if ($autoplay !== NULL) {
@@ -118,27 +115,33 @@ class YouTubeRenderer implements FileRendererInterface {
 		}
 
 		$videoId = $this->getOnlineMediaHelper($file)->getOnlineMediaId($orgFile);
-		$attributes = array(
-			'src' => sprintf('//www.youtube.com/embed/%s?%s', $videoId, implode('&amp;', $urlParams)),
+		$src = sprintf(
+			'//www.youtube%s.com/embed/%s?%s',
+			!empty($options['no-cookie']) ? '-nocookie' : '',
+			$videoId,
+			implode('&amp;', $urlParams)
 		);
 
-		$width = (int)$width;
-		if (!empty($width)) {
-			$attributes['width'] = $width;
+		$attributes = ['allowfullscreen'];
+		if ((int)$width > 0) {
+			$attributes[] = 'width="' . (int)$width . '"';
 		}
-		$height = (int)$height;
-		if (!empty($height)) {
-			$attributes['height'] = $height;
+		if ((int)$height > 0) {
+			$attributes[] = 'height="' . (int)$height . '"';
 		}
 		if (is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->config['config']['doctype'] !== 'html5') {
-			$attributes['frameborder'] = '0';
+			$attributes[] = 'frameborder="0"';
 		}
-		$output = '';
-		foreach ($attributes as $key => $value) {
-			$output .= $key . '="' . $value . '" ';
+		foreach (['class', 'dir', 'id', 'lang', 'style', 'title', 'accesskey', 'tabindex', 'onclick', 'poster', 'preload'] as $key) {
+			if (!empty($options[$key])) {
+				$attributes[] = $key . '="' . htmlspecialchars($options[$key]) . '"';
+			}
 		}
 
-		// wrap in div so you can make is responsive
-		return '<div class="video-container"><iframe ' . $output . 'allowfullscreen></iframe></div>';
+		return sprintf(
+			'<iframe src="%s"%s></iframe>',
+			$src,
+			empty($attributes) ? '' : ' ' . implode(' ', $attributes)
+		);
 	}
 }
