@@ -1,0 +1,8 @@
+# cat=Online Media; type=boolean; label=Enable f:image Xclass; Make the f:image viewhelper behave like the online:media viewhelper
+enableImageViewHelperXclass =
+
+# cat=Online Media; type=boolean; label=Enable show image popup Xclass
+enableShowImageControllerXclass = 1
+
+# cat=Online Media; type=boolean; label=Enable ElementInformationController Xclass
+enableElementInformationControllerXclass = 1

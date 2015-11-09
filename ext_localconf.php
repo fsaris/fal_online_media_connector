@@ -4,18 +4,20 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 call_user_func(function($packageKey) {
 
+	$emConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$packageKey]);
+
 	// Extend/Xclass ImageViewHelper to support custom output
-	if (TRUE) { // todo: add switch in ext_configuration
+	if (!empty($emConfiguration['enableImageViewHelperXclass'])) {
 		$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects']['TYPO3\CMS\\Fluid\\ViewHelpers\\ImageViewHelper'] = array(
 			'className' => 'MiniFranske\\FalOnlineMediaConnector\\Xclass\\ImageViewHelper',
 		);
 	}
-	if (TRUE) { // todo: add switch in ext_configuration
+	if (!isset($emConfiguration['enableShowImageControllerXclass']) || !empty($emConfiguration['enableShowImageControllerXclass'])) {
 		$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects']['TYPO3\\CMS\\Frontend\\Controller\\ShowImageController'] = array(
 			'className' => 'MiniFranske\\FalOnlineMediaConnector\\Xclass\\ShowImageController',
 		);
 	}
-	if (TRUE) { // todo: add switch in ext_configuration
+	if (!isset($emConfiguration['enableElementInformationControllerXclass']) || !empty($emConfiguration['enableElementInformationControllerXclass'])) {
 		$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects']['TYPO3\\CMS\\Backend\\Controller\\ContentElement\\ElementInformationController'] = array(
 			'className' => 'MiniFranske\\FalOnlineMediaConnector\\Xclass\\ElementInformationController',
 		);
