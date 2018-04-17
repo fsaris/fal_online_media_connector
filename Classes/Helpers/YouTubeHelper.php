@@ -58,11 +58,16 @@ class YouTubeHelper extends AbstractOnlineMediaHelper {
 		$temporaryFileName = PATH_site .'typo3temp/youtube_' . md5($videoId) . '.jpg';
 
 		if (!file_exists($temporaryFileName)) {
-			$previewImage = GeneralUtility::getUrl(
-				sprintf('http://img.youtube.com/vi/%s/0.jpg', $videoId)
-			);
-			if ($previewImage !== FALSE) {
-				file_put_contents($temporaryFileName, $previewImage);
+			$tryNames = array('maxresdefault.jpg', '0.jpg');
+			foreach ($tryNames as $tryName) {
+				$previewImage = GeneralUtility::getUrl(
+					sprintf('https://img.youtube.com/vi/%s/%s', $videoId, $tryName)
+				);
+				if ($previewImage !== false) {
+					file_put_contents($temporaryFileName, $previewImage);
+					GeneralUtility::fixPermissions($temporaryFileName);
+					break;
+				}
 			}
 		}
 
