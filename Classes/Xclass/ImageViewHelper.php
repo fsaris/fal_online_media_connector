@@ -59,7 +59,8 @@ class ImageViewHelper extends \MiniFranske\FalOnlineMediaConnector\ViewHelpers\M
 		if ($height === NULL && $maxHeight !== NULL) {
 			$height = $maxHeight . 'm';
 		}
-		$image = $this->imageService->getImage($src, $image, $treatIdAsReference);
+		$imageService = $this->getImageService();
+		$image = $imageService->getImage($src, $image, $treatIdAsReference);
 
 		return parent::render($image, array(), $width, $height);
 	}
